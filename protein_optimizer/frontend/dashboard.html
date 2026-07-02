@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EvoEmu — Past Runs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    :root {
+      --bg:           #f6f7f9;
+      --surface:      #ffffff;
+      --surface-2:    #fbfcfe;
+      --border:       #e7e9ee;
+      --border-strong:#d8dbe3;
+      --text:         #11140f;
+      --muted:        #586059;
+      --subtle:       #969d96;
+      --accent:       #166534;
+      --accent-dark:  #14532d;
+      --accent-light: #eef3ee;
+      --green:        #15803d;
+      --red:          #dc2626;
+      --red-light:    #fef2f2;
+      --ink-panel:    #0a0e1a;
+      --radius:       10px;
+      --radius-lg:    16px;
+      --shadow-xs:    0 1px 2px rgba(16,24,40,.04);
+      --shadow-sm:    0 1px 2px rgba(16,24,40,.04), 0 1px 3px rgba(16,24,40,.06);
+      --shadow-md:    0 10px 30px -14px rgba(16,24,40,.20);
+      --transition:   .18s ease;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: linear-gradient(180deg, #fafbf9 0%, #f1f4ef 100%);
+      background-attachment: fixed;
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      letter-spacing: -.006em;
+    }
+
+    .page { max-width:1080px; margin:0 auto; padding:56px 24px 96px; }
+
+    .header { margin-bottom:32px; }
+    .header-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
+    .brand { font-weight:800; font-size:1.6rem; letter-spacing:-.05em; }
+    .brand-mark  { color:var(--text); }
+    .brand-mark2 { color:var(--accent); }
+    .back-link { font-size:.82rem; color:var(--accent); text-decoration:none; font-weight:600; }
+    h1 { font-size:1.9rem; font-weight:800; letter-spacing:-.03em; margin-bottom:8px; }
+    .tagline { font-size:.95rem; color:var(--muted); }
+
+    .card {
+      background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg);
+      padding:20px; box-shadow:var(--shadow-sm); margin-bottom:20px;
+    }
+    .card-label { font-size:.78rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); margin-bottom:14px; }
+
+    table { width:100%; border-collapse:collapse; font-size:.85rem; }
+    th { text-align:left; padding:10px 12px; border-bottom:2px solid var(--border-strong); color:var(--muted); font-weight:600; font-size:.76rem; text-transform:uppercase; letter-spacing:.03em; }
+    td { padding:10px 12px; border-bottom:1px solid var(--border); vertical-align:middle; }
+    tr:last-child td { border-bottom:none; }
+    tbody tr { cursor:pointer; transition:background .1s; }
+    tbody tr:hover td { background:var(--surface-2); }
+    .mono { font-family:'JetBrains Mono',monospace; font-size:.8rem; }
+    .badge { display:inline-block; padding:2px 9px; border-radius:999px; font-size:.72rem; font-weight:700; }
+    .badge-ok { background:#ecfdf3; color:var(--accent-dark); }
+    .badge-no { background:var(--red-light); color:var(--red); }
+    .badge-running { background:#fef9c3; color:#a16207; }
+    .badge-error { background:var(--red-light); color:var(--red); }
+    .empty-state { text-align:center; padding:40px 20px; color:var(--muted); }
+
+    .back-row { margin-bottom:16px; }
+    .back-row a { font-size:.82rem; color:var(--accent); text-decoration:none; font-weight:600; }
+
+    .detail-stats { display:flex; gap:28px; flex-wrap:wrap; margin-bottom:18px; }
+    .stat { }
+    .stat-lbl { font-size:.72rem; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; margin-bottom:4px; }
+    .stat-val { font-family:'JetBrains Mono',monospace; font-size:1.1rem; font-weight:600; }
+    .seq-box { font-family:'JetBrains Mono',monospace; font-size:.72rem; color:var(--muted); word-break:break-all; background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:10px 12px; }
+
+    .convergence-wrap { padding:12px 14px 4px; background:var(--surface-2); border:1px solid var(--border); border-radius:12px; margin-bottom:18px; }
+  </style>
+</head>
+<body>
+
+<div class="page">
+  <div class="header">
+    <div class="header-top">
+      <div class="brand"><span class="brand-mark">Evo</span><span class="brand-mark2">Emu</span></div>
+      <a class="back-link" href="/">&larr; Back to Optimizer</a>
+    </div>
+    <h1>Past Runs</h1>
+    <p class="tagline">Every optimization run triggered from the live page, persisted for comparison.</p>
+  </div>
+
+  <div id="listView">
+    <div class="card">
+      <div class="card-label">Runs</div>
+      <div id="runsTableWrap">
+        <table>
+          <thead>
+            <tr><th>Started</th><th>Mode</th><th>Reference LLR</th><th>Best LLR</th><th>Outcome</th><th>Rounds</th><th>Evaluated</th></tr>
+          </thead>
+          <tbody id="runsBody"></tbody>
+        </table>
+      </div>
+      <div id="emptyState" class="empty-state" style="display:none">No runs yet — trigger one from the optimizer page.</div>
+    </div>
+  </div>
+
+  <div id="detailView" style="display:none">
+    <div class="back-row"><a href="#" onclick="showList(); return false;">&larr; All runs</a></div>
+    <div class="card">
+      <div class="card-label">Run Summary</div>
+      <div class="detail-stats">
+        <div class="stat"><div class="stat-lbl">Reference LLR</div><div class="stat-val" id="dRefLlr">—</div></div>
+        <div class="stat"><div class="stat-lbl">Best LLR</div><div class="stat-val" id="dBestLlr">—</div></div>
+        <div class="stat"><div class="stat-lbl">Outcome</div><div class="stat-val" id="dOutcome">—</div></div>
+        <div class="stat"><div class="stat-lbl">Rounds</div><div class="stat-val" id="dRounds">—</div></div>
+        <div class="stat"><div class="stat-lbl">Evaluated</div><div class="stat-val" id="dEvaluated">—</div></div>
+        <div class="stat"><div class="stat-lbl">Wall time</div><div class="stat-val" id="dTime">—</div></div>
+      </div>
+      <div class="seq-box" id="dBestSeq" style="margin-bottom:6px"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Convergence</div>
+      <div class="convergence-wrap"><canvas id="detailChart" height="120"></canvas></div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Top Sequences</div>
+      <table>
+        <thead><tr><th style="width:46px">Rank</th><th style="width:100px">LLR</th><th>Sequence</th></tr></thead>
+        <tbody id="dTopBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  let _detailChart = null;
+
+  function fmtDate(ts) {
+    if (!ts) return '—';
+    return new Date(ts * 1000).toLocaleString();
+  }
+
+  function statusBadge(run) {
+    if (run.status === 'running') return '<span class="badge badge-running">Running</span>';
+    if (run.status === 'error') return '<span class="badge badge-error">Error</span>';
+    if (run.improved) return '<span class="badge badge-ok">Improved</span>';
+    return '<span class="badge badge-no">No improvement</span>';
+  }
+
+  async function loadRuns() {
+    const res = await fetch('/api/runs');
+    const runs = await res.json();
+    const tbody = document.getElementById('runsBody');
+    tbody.innerHTML = '';
+    if (!runs.length) {
+      document.getElementById('emptyState').style.display = 'block';
+      document.getElementById('runsTableWrap').style.display = 'none';
+      return;
+    }
+    document.getElementById('emptyState').style.display = 'none';
+    document.getElementById('runsTableWrap').style.display = 'block';
+    runs.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.onclick = () => showDetail(r.job_id);
+      tr.innerHTML = `
+        <td class="mono">${fmtDate(r.created_at)}</td>
+        <td>${r.mode || '—'}</td>
+        <td class="mono">${r.reference_llr != null ? r.reference_llr.toFixed(4) : '—'}</td>
+        <td class="mono">${r.best_llr != null ? r.best_llr.toFixed(4) : '—'}</td>
+        <td>${statusBadge(r)}</td>
+        <td class="mono">${r.rounds_run ?? '—'}</td>
+        <td class="mono">${r.total_evaluated ?? '—'}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function showList() {
+    document.getElementById('listView').style.display = 'block';
+    document.getElementById('detailView').style.display = 'none';
+  }
+
+  async function showDetail(jobId) {
+    const res = await fetch('/api/runs/' + jobId);
+    if (!res.ok) return;
+    const run = await res.json();
+
+    document.getElementById('listView').style.display = 'none';
+    document.getElementById('detailView').style.display = 'block';
+
+    document.getElementById('dRefLlr').textContent = run.reference_llr != null ? run.reference_llr.toFixed(4) : '—';
+    document.getElementById('dBestLlr').textContent = run.best_llr != null ? run.best_llr.toFixed(4) : '—';
+    document.getElementById('dOutcome').innerHTML = statusBadge(run);
+    document.getElementById('dRounds').textContent = run.rounds_run ?? '—';
+    document.getElementById('dEvaluated').textContent = run.total_evaluated ?? '—';
+    document.getElementById('dTime').textContent = run.wall_time_s != null ? run.wall_time_s.toFixed(1) + 's' : '—';
+    document.getElementById('dBestSeq').textContent = run.best_sequence || '(no sequence recorded)';
+
+    const ctx = document.getElementById('detailChart');
+    if (_detailChart) _detailChart.destroy();
+    const points = (run.rounds || []).map(r => ({ x: r.round, y: r.best_llr }));
+    _detailChart = new Chart(ctx, {
+      type: 'line',
+      data: { datasets: [{
+        label: 'Best LLR', data: points,
+        borderColor: '#166534', backgroundColor: 'rgba(22,101,52,.08)',
+        pointBackgroundColor: '#166534', tension: .25, fill: true,
+      }] },
+      options: {
+        responsive: true,
+        scales: {
+          x: { type: 'linear', title: { display: true, text: 'Round' }, ticks: { stepSize: 1 } },
+          y: { title: { display: true, text: 'Best LLR' } },
+        },
+        plugins: { legend: { display: false } },
+      },
+    });
+
+    const topList = (run.result && (run.result.top10 || run.result.top20)) || [];
+    const tbody = document.getElementById('dTopBody');
+    tbody.innerHTML = '';
+    topList.slice(0, 10).forEach((m, i) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${i + 1}</td><td class="mono">${m.llr.toFixed(4)}</td><td class="mono" style="font-size:.7rem;word-break:break-all">${m.sequence}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  loadRuns();
+</script>
+</body>
+</html>

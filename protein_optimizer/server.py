@@ -35,6 +35,7 @@ from pydantic import BaseModel
 
 from protein_optimizer import OptimizationConfig
 from protein_optimizer.evolutionary_search import BudgetedEvolutionarySearch
+from protein_optimizer import run_store
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s  %(levelname)-8s  %(message)s")
 logger = logging.getLogger(__name__)
@@ -44,6 +45,8 @@ app = FastAPI(title="Protein Optimizer")
 STATIC_DIR = Path(__file__).parent / "frontend"
 CONFIG_DIR = Path(__file__).parent / "config"
 SHARED_RUNS_DIR = Path(__file__).parent / "shared_runs"
+
+run_store.init_db()
 
 jobs: Dict[str, Dict[str, Any]] = {}
 job_queues: Dict[str, queue.Queue] = {}
@@ -64,6 +67,25 @@ class RunRequest(BaseModel):
 @app.get("/")
 def serve_index():
     return FileResponse(str(STATIC_DIR / "index.html"))
+
+
+@app.get("/dashboard")
+def serve_dashboard():
+    return FileResponse(str(STATIC_DIR / "dashboard.html"))
+
+
+@app.get("/api/runs")
+def list_runs(limit: int = 50):
+    return run_store.list_runs(limit=limit)
+
+
+@app.get("/api/runs/{job_id}")
+def get_run(job_id: str):
+    run = run_store.get_run(job_id)
+    if run is None:
+        return JSONResponse({"error": "Run not found"}, status_code=404)
+    run["rounds"] = run_store.get_run_rounds(job_id)
+    return run
 
 
 @app.get("/api/saved-trajectory/{run}/{which}")
@@ -89,9 +111,15 @@ def start_run(req: RunRequest):
         "started_at": time.time(),
     }
     job_queues[job_id] = q
+    run_store.create_run(job_id, req.model_dump())
 
     def progress_callback(event: dict) -> None:
         q.put(event)
+        if event.get("type") == "round_scored":
+            try:
+                run_store.record_round(job_id, event)
+            except Exception:
+                logger.exception("Failed to persist round for job %s", job_id)
 
     def run_job() -> None:
         try:
@@ -136,11 +164,19 @@ def start_run(req: RunRequest):
             jobs[job_id]["status"] = "done"
             q.put({"type": "done", "result": result_data})
             logger.info("Job %s completed in %.1fs", job_id, result.total_wall_time_s)
+            try:
+                run_store.finalize_run(job_id, result_data)
+            except Exception:
+                logger.exception("Failed to persist final result for job %s", job_id)
         except Exception as exc:
             jobs[job_id]["status"] = "error"
             jobs[job_id]["error"] = str(exc)
             q.put({"type": "error", "message": str(exc)})
             logger.exception("Job %s failed", job_id)
+            try:
+                run_store.fail_run(job_id, str(exc))
+            except Exception:
+                logger.exception("Failed to persist error state for job %s", job_id)
 
     threading.Thread(target=run_job, daemon=True).start()
     return {"job_id": job_id}

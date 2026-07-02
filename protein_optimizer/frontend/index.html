@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
   <script src="https://3Dmol.org/build/3Dmol-min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -438,6 +439,7 @@
     .activity-log .al-row{ animation:fadeIn .2s ease both; }
     .activity-log .al-round{ color:#86efac; font-weight:600; }
     .activity-log .al-best{ color:#34d399; font-weight:600; }
+    .convergence-wrap{ margin-top:14px; padding:12px 14px 4px; background:var(--surface-2); border:1px solid var(--border); border-radius:12px; }
 
     /* ── Scroll reveal ──────────────────────── */
     .reveal{ opacity:0; transform:translateY(26px) scale(.99);
@@ -458,6 +460,9 @@
 <div class="page">
 
   <header class="header">
+    <div style="display:flex; justify-content:flex-end;">
+      <a href="/dashboard" style="font-size:.82rem; color:var(--accent); text-decoration:none; font-weight:600;">Past Runs &rarr;</a>
+    </div>
     <div class="brand"><span class="brand-mark">Evo</span><span class="brand-mark2">Emu</span></div>
     <h1>Engineer protein sequences toward a target conformation</h1>
     <p class="tagline">In&nbsp;silico directed evolution. ESM-2 proposes mutations, BioEmu scores each candidate's conformational landscape, and a genetic search evolves the sequence toward your target.</p>
@@ -716,6 +721,9 @@
         <span>Best LLR <b id="actBest">—</b></span>
       </div>
       <div class="activity-log" id="activityLog"></div>
+      <div class="convergence-wrap">
+        <canvas id="convergenceChart" height="140"></canvas>
+      </div>
     </div>
   </div>
 
@@ -1307,6 +1315,40 @@
     return out.length ? out.join(', ') : '(none)';
   }
 
+  // ── Convergence chart (best LLR per round, live) ─────────────
+  let _convergenceChart = null;
+  function initConvergenceChart() {
+    const ctx = document.getElementById('convergenceChart');
+    if (!ctx || typeof Chart === 'undefined') return;
+    if (_convergenceChart) _convergenceChart.destroy();
+    _convergenceChart = new Chart(ctx, {
+      type: 'line',
+      data: { datasets: [{
+        label: 'Best LLR',
+        data: [],
+        borderColor: '#166534',
+        backgroundColor: 'rgba(22,101,52,.08)',
+        pointBackgroundColor: '#166534',
+        tension: .25,
+        fill: true,
+      }] },
+      options: {
+        animation: false,
+        responsive: true,
+        scales: {
+          x: { type: 'linear', title: { display: true, text: 'Round' }, ticks: { stepSize: 1 } },
+          y: { title: { display: true, text: 'Best LLR' } },
+        },
+        plugins: { legend: { display: false } },
+      },
+    });
+  }
+  function convergencePush(round, bestLlr) {
+    if (!_convergenceChart) return;
+    _convergenceChart.data.datasets[0].data.push({ x: round, y: bestLlr });
+    _convergenceChart.update();
+  }
+
   // ── Live search activity feed (driven by real backend SSE events) ──
   function actReset() {
     document.getElementById('activityLog').innerHTML = '';
@@ -1316,6 +1358,7 @@
     document.getElementById('activity').classList.add('visible');
     document.getElementById('gaHeader').classList.add('visible');
     document.getElementById('activitySpin').style.display = 'inline-block';
+    initConvergenceChart();
   }
   function actDone() { document.getElementById('activitySpin').style.display = 'none'; }
   function actLog(html, kind) {
@@ -1341,7 +1384,8 @@
       case 'round_scored':
         document.getElementById('actEval').textContent = d.total_evaluated;
         document.getElementById('actBest').textContent = (+d.best_llr).toFixed(4);
-        actLog(`<span class="al-round">Round ${d.round}</span> — kept top ${d.top20.length} · best LLR <span class="al-best">${(+d.best_llr).toFixed(4)}</span> · ${d.total_evaluated} evaluated total`); break;
+        actLog(`<span class="al-round">Round ${d.round}</span> — kept top ${d.top20.length} · best LLR <span class="al-best">${(+d.best_llr).toFixed(4)}</span> · ${d.total_evaluated} evaluated total`);
+        convergencePush(d.round, +d.best_llr); break;
     }
   }
 

@@ -8,6 +8,7 @@ venv/
 # Run outputs
 results/
 results/trajectories/
+data/
 
 # OS / editor
 .DS_Store
