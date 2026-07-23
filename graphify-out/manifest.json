@@ -1,0 +1,162 @@
+{
+  ".claude/settings.local.json": {
+    "mtime": 1782685386.1589916,
+    "ast_hash": "e03eff0736c937fc3fb52489ec75cb9f",
+    "semantic_hash": "e03eff0736c937fc3fb52489ec75cb9f"
+  },
+  "main.py": {
+    "mtime": 1782675845.3195884,
+    "ast_hash": "7abf8185107264fe8c35506eca8f3a51",
+    "semantic_hash": "7abf8185107264fe8c35506eca8f3a51"
+  },
+  "practice.sh": {
+    "mtime": 1782669083.2919483,
+    "ast_hash": "bc7b49b107a24863b589b2c6b1b9a054",
+    "semantic_hash": "bc7b49b107a24863b589b2c6b1b9a054"
+  },
+  "protein_optimizer/__init__.py": {
+    "mtime": 1782669083.2941487,
+    "ast_hash": "b0b6cad47d8f3dd50cac119b8bbe4fe9",
+    "semantic_hash": "b0b6cad47d8f3dd50cac119b8bbe4fe9"
+  },
+  "protein_optimizer/analysis.py": {
+    "mtime": 1782669083.2947829,
+    "ast_hash": "e7dc9b633f107cdd914e190cd316213e",
+    "semantic_hash": "e7dc9b633f107cdd914e190cd316213e"
+  },
+  "protein_optimizer/bioemu.py": {
+    "mtime": 1782669083.2952306,
+    "ast_hash": "8b2472a3a21de0b137d3ccb2e173b1b4",
+    "semantic_hash": "8b2472a3a21de0b137d3ccb2e173b1b4"
+  },
+  "protein_optimizer/config.py": {
+    "mtime": 1782669083.295424,
+    "ast_hash": "314c258d5163fbcc61c944b9503112d3",
+    "semantic_hash": "314c258d5163fbcc61c944b9503112d3"
+  },
+  "protein_optimizer/esm.py": {
+    "mtime": 1782669083.2958984,
+    "ast_hash": "41073a9d5348d801010f2e31d87ecdb6",
+    "semantic_hash": "41073a9d5348d801010f2e31d87ecdb6"
+  },
+  "protein_optimizer/evolutionary_search.py": {
+    "mtime": 1782689421.3105884,
+    "ast_hash": "011eefdf7148f8ec839a125cf2d385bf",
+    "semantic_hash": "011eefdf7148f8ec839a125cf2d385bf"
+  },
+  "protein_optimizer/genetic_algorithm.py": {
+    "mtime": 1782669083.2965024,
+    "ast_hash": "c454f00416a1474478c2e8910b1f0ef8",
+    "semantic_hash": "c454f00416a1474478c2e8910b1f0ef8"
+  },
+  "protein_optimizer/mutation.py": {
+    "mtime": 1782669083.2970355,
+    "ast_hash": "a081adfcde468b5b3baf5a9c33fa20dd",
+    "semantic_hash": "a081adfcde468b5b3baf5a9c33fa20dd"
+  },
+  "protein_optimizer/pipeline.py": {
+    "mtime": 1782669083.297396,
+    "ast_hash": "fa9ba1cdff65fd1bcd60853f7ccbb003",
+    "semantic_hash": "fa9ba1cdff65fd1bcd60853f7ccbb003"
+  },
+  "protein_optimizer/scoring.py": {
+    "mtime": 1782669083.2976735,
+    "ast_hash": "a8cc15b1cbd16882f9128e884e05b1be",
+    "semantic_hash": "a8cc15b1cbd16882f9128e884e05b1be"
+  },
+  "pyproject.toml": {
+    "mtime": 1782669083.2980058,
+    "ast_hash": "8a3a860f18c89b7df5515bbcccbe7e6e",
+    "semantic_hash": "8a3a860f18c89b7df5515bbcccbe7e6e"
+  },
+  "scripts/bioemu_gif_maker.py": {
+    "mtime": 1782979984.7048335,
+    "ast_hash": "9a3f6dcd38c9430330b105872f4e3f8c",
+    "semantic_hash": "9a3f6dcd38c9430330b105872f4e3f8c"
+  },
+  "scripts/run_optimization.py": {
+    "mtime": 1782669083.299909,
+    "ast_hash": "eb3f897d147f8524b0eaf6db5f932bbd",
+    "semantic_hash": "eb3f897d147f8524b0eaf6db5f932bbd"
+  },
+  "scripts/traj_gif_maker.py": {
+    "mtime": 1782979985.5190883,
+    "ast_hash": "233de4efc22505d01e4e90eb0c08e690",
+    "semantic_hash": "233de4efc22505d01e4e90eb0c08e690"
+  },
+  "server.py": {
+    "mtime": 1783029212.6629734,
+    "ast_hash": "8fe68dea200a4a87e27fb45755a13056",
+    "semantic_hash": ""
+  },
+  "setup_vm.sh": {
+    "mtime": 1782669083.300273,
+    "ast_hash": "af1359168d84e40a1f7e9f926047e518",
+    "semantic_hash": "af1359168d84e40a1f7e9f926047e518"
+  },
+  "tests/__init__.py": {
+    "mtime": 1782669083.3005917,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "tests/test_ga.py": {
+    "mtime": 1782669083.302742,
+    "ast_hash": "e0da310b56005a95ffb261cfa8ab8b9f",
+    "semantic_hash": "e0da310b56005a95ffb261cfa8ab8b9f"
+  },
+  "tests/test_mutation.py": {
+    "mtime": 1782669083.3031628,
+    "ast_hash": "66e06500c6d7cc14b4ff2ccdce1ecdf6",
+    "semantic_hash": "66e06500c6d7cc14b4ff2ccdce1ecdf6"
+  },
+  "tests/test_scoring.py": {
+    "mtime": 1782669083.3034945,
+    "ast_hash": "4658ed8ea7bc8a9684376bcb59945d57",
+    "semantic_hash": "4658ed8ea7bc8a9684376bcb59945d57"
+  },
+  "tests/test_wildtype.py": {
+    "mtime": 1782669083.304016,
+    "ast_hash": "d7e394af202606a5cf0fdd609592c8f0",
+    "semantic_hash": "d7e394af202606a5cf0fdd609592c8f0"
+  },
+  "README.md": {
+    "mtime": 1782669083.2907395,
+    "ast_hash": "428a5f2115eea181240c0e53bf7c73ac",
+    "semantic_hash": "428a5f2115eea181240c0e53bf7c73ac"
+  },
+  "config/default.yaml": {
+    "mtime": 1782669083.2911785,
+    "ast_hash": "0340b269e2b336cfb842ad217aa9928f",
+    "semantic_hash": "0340b269e2b336cfb842ad217aa9928f"
+  },
+  "config/evolutionary.yaml": {
+    "mtime": 1782669083.291366,
+    "ast_hash": "33d55284a3db4943ae40c329a6b3d3b8",
+    "semantic_hash": "33d55284a3db4943ae40c329a6b3d3b8"
+  },
+  "frontend/index.backup.html": {
+    "mtime": 1782689421.309573,
+    "ast_hash": "82a013678fb1df8ee2537b5131c03d29",
+    "semantic_hash": "82a013678fb1df8ee2537b5131c03d29"
+  },
+  "frontend/index.html": {
+    "mtime": 1783029162.7744017,
+    "ast_hash": "80d414e6f73560f306ba00468ef6ccb5",
+    "semantic_hash": ""
+  },
+  "shared_runs/run_L5Y/results.txt": {
+    "mtime": 1782675845.3241293,
+    "ast_hash": "97687926c7674b18e28943e1dfae7989",
+    "semantic_hash": "97687926c7674b18e28943e1dfae7989"
+  },
+  "protein_optimizer/run_store.py": {
+    "mtime": 1783029089.47701,
+    "ast_hash": "647fc10cbffc52848d7e99459e38bdc4",
+    "semantic_hash": ""
+  },
+  "frontend/dashboard.html": {
+    "mtime": 1783029199.423226,
+    "ast_hash": "0810fcfe56ec267776d46728af5565c4",
+    "semantic_hash": ""
+  }
+}
