@@ -4,44 +4,14 @@
   "graph": {},
   "nodes": [
     {
-      "label": "CLAUDE.md",
-      "file_type": "document",
-      "source_file": "CLAUDE.md",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "claude",
-      "community": 8,
-      "norm_label": "claude.md"
-    },
-    {
-      "label": "protein_optimizer (EvoEmu)",
-      "file_type": "document",
-      "source_file": "CLAUDE.md",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "claude_protein_optimizer_evoemu",
-      "community": 8,
-      "norm_label": "protein_optimizer (evoemu)"
-    },
-    {
-      "label": "graphify",
-      "file_type": "document",
-      "source_file": "CLAUDE.md",
-      "source_location": "L3",
-      "_origin": "ast",
-      "id": "claude_graphify",
-      "community": 8,
-      "norm_label": "graphify"
-    },
-    {
       "label": "run_store.py",
       "file_type": "code",
       "source_file": "protein_optimizer/run_store.py",
       "source_location": "L1",
       "_origin": "ast",
+      "id": "protein_optimizer_run_store",
       "community": 3,
-      "norm_label": "run_store.py",
-      "id": "protein_optimizer_run_store"
+      "norm_label": "run_store.py"
     },
     {
       "label": "_connect()",
@@ -49,9 +19,9 @@
       "source_file": "protein_optimizer/run_store.py",
       "source_location": "L26",
       "_origin": "ast",
+      "id": "protein_optimizer_run_store_connect",
       "community": 2,
-      "norm_label": "_connect()",
-      "id": "protein_optimizer_run_store_connect"
+      "norm_label": "_connect()"
     },
     {
       "label": "Connection",
@@ -59,9 +29,9 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
+      "id": "connection",
       "community": 2,
-      "norm_label": "connection",
-      "id": "connection"
+      "norm_label": "connection"
     },
     {
       "label": "init_db()",
@@ -69,9 +39,9 @@
       "source_file": "protein_optimizer/run_store.py",
       "source_location": "L33",
       "_origin": "ast",
+      "id": "protein_optimizer_run_store_init_db",
       "community": 2,
-      "norm_label": "init_db()",
-      "id": "protein_optimizer_run_store_init_db"
+      "norm_label": "init_db()"
     },
     {
       "label": "create_run()",
@@ -79,9 +49,9 @@
       "source_file": "protein_optimizer/run_store.py",
       "source_location": "L76",
       "_origin": "ast",
+      "id": "protein_optimizer_run_store_create_run",
       "community": 3,
-      "norm_label": "create_run()",
-      "id": "protein_optimizer_run_store_create_run"
+      "norm_label": "create_run()"
     },
     {
       "label": "Any",
@@ -89,9 +59,9 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
+      "id": "any",
       "community": 1,
-      "norm_label": "any",
-      "id": "any"
+      "norm_label": "any"
     },
     {
       "label": "record_round()",
@@ -99,9 +69,9 @@
       "source_file": "protein_optimizer/run_store.py",
       "source_location": "L87",
       "_origin": "ast",
+      "id": "protein_optimizer_run_store_record_round",
       "community": 3,
-      "norm_label": "record_round()",
-      "id": "protein_optimizer_run_store_record_round"
+      "norm_label": "record_round()"
     },
     {
       "label": "finalize_run()",
@@ -109,9 +79,9 @@
       "source_file": "protein_optimizer/run_store.py",
       "source_location": "L106",
       "_origin": "ast",
+      "id": "protein_optimizer_run_store_finalize_run",
       "community": 1,
-      "norm_label": "finalize_run()",
-      "id": "protein_optimizer_run_store_finalize_run"
+      "norm_label": "finalize_run()"
     },
     {
       "label": "fail_run()",
@@ -119,9 +89,9 @@
       "source_file": "protein_optimizer/run_store.py",
       "source_location": "L138",
       "_origin": "ast",
+      "id": "protein_optimizer_run_store_fail_run",
       "community": 2,
-      "norm_label": "fail_run()",
-      "id": "protein_optimizer_run_store_fail_run"
+      "norm_label": "fail_run()"
     },
     {
       "label": "list_runs()",
@@ -129,9 +99,9 @@
       "source_file": "protein_optimizer/run_store.py",
       "source_location": "L146",
       "_origin": "ast",
+      "id": "protein_optimizer_run_store_list_runs",
       "community": 1,
-      "norm_label": "list_runs()",
-      "id": "protein_optimizer_run_store_list_runs"
+      "norm_label": "list_runs()"
     },
     {
       "label": "get_run()",
@@ -139,9 +109,9 @@
       "source_file": "protein_optimizer/run_store.py",
       "source_location": "L161",
       "_origin": "ast",
+      "id": "protein_optimizer_run_store_get_run",
       "community": 1,
-      "norm_label": "get_run()",
-      "id": "protein_optimizer_run_store_get_run"
+      "norm_label": "get_run()"
     },
     {
       "label": "get_run_rounds()",
@@ -149,9 +119,9 @@
       "source_file": "protein_optimizer/run_store.py",
       "source_location": "L172",
       "_origin": "ast",
+      "id": "protein_optimizer_run_store_get_run_rounds",
       "community": 1,
-      "norm_label": "get_run_rounds()",
-      "id": "protein_optimizer_run_store_get_run_rounds"
+      "norm_label": "get_run_rounds()"
     },
     {
       "label": "Run Store \u2014 SQLite persistence for optimization runs.  Records every server-trig",
@@ -159,9 +129,9 @@
       "source_file": "protein_optimizer/run_store.py",
       "source_location": "L1",
       "_origin": "ast",
+      "id": "protein_optimizer_run_store_rationale_1",
       "community": 3,
-      "norm_label": "run store \u2014 sqlite persistence for optimization runs.  records every server-trig",
-      "id": "protein_optimizer_run_store_rationale_1"
+      "norm_label": "run store \u2014 sqlite persistence for optimization runs.  records every server-trig"
     },
     {
       "label": "server.py",
@@ -169,9 +139,9 @@
       "source_file": "server.py",
       "source_location": "L1",
       "_origin": "ast",
+      "id": "server",
       "community": 0,
-      "norm_label": "server.py",
-      "id": "server"
+      "norm_label": "server.py"
     },
     {
       "label": "RunRequest",
@@ -179,9 +149,9 @@
       "source_file": "server.py",
       "source_location": "L55",
       "_origin": "ast",
+      "id": "server_runrequest",
       "community": 4,
-      "norm_label": "runrequest",
-      "id": "server_runrequest"
+      "norm_label": "runrequest"
     },
     {
       "label": "BaseModel",
@@ -189,9 +159,9 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
+      "id": "basemodel",
       "community": 4,
-      "norm_label": "basemodel",
-      "id": "basemodel"
+      "norm_label": "basemodel"
     },
     {
       "label": "serve_index()",
@@ -199,9 +169,9 @@
       "source_file": "server.py",
       "source_location": "L68",
       "_origin": "ast",
+      "id": "server_serve_index",
       "community": 0,
-      "norm_label": "serve_index()",
-      "id": "server_serve_index"
+      "norm_label": "serve_index()"
     },
     {
       "label": "serve_dashboard()",
@@ -209,9 +179,9 @@
       "source_file": "server.py",
       "source_location": "L73",
       "_origin": "ast",
+      "id": "server_serve_dashboard",
       "community": 0,
-      "norm_label": "serve_dashboard()",
-      "id": "server_serve_dashboard"
+      "norm_label": "serve_dashboard()"
     },
     {
       "label": "list_runs()",
@@ -219,9 +189,9 @@
       "source_file": "server.py",
       "source_location": "L78",
       "_origin": "ast",
+      "id": "server_list_runs",
       "community": 0,
-      "norm_label": "list_runs()",
-      "id": "server_list_runs"
+      "norm_label": "list_runs()"
     },
     {
       "label": "get_run()",
@@ -229,9 +199,9 @@
       "source_file": "server.py",
       "source_location": "L83",
       "_origin": "ast",
+      "id": "server_get_run",
       "community": 0,
-      "norm_label": "get_run()",
-      "id": "server_get_run"
+      "norm_label": "get_run()"
     },
     {
       "label": "saved_trajectory()",
@@ -239,9 +209,9 @@
       "source_file": "server.py",
       "source_location": "L92",
       "_origin": "ast",
+      "id": "server_saved_trajectory",
       "community": 7,
-      "norm_label": "saved_trajectory()",
-      "id": "server_saved_trajectory"
+      "norm_label": "saved_trajectory()"
     },
     {
       "label": "start_run()",
@@ -249,9 +219,9 @@
       "source_file": "server.py",
       "source_location": "L104",
       "_origin": "ast",
+      "id": "server_start_run",
       "community": 4,
-      "norm_label": "start_run()",
-      "id": "server_start_run"
+      "norm_label": "start_run()"
     },
     {
       "label": "get_job()",
@@ -259,9 +229,9 @@
       "source_file": "server.py",
       "source_location": "L186",
       "_origin": "ast",
+      "id": "server_get_job",
       "community": 0,
-      "norm_label": "get_job()",
-      "id": "server_get_job"
+      "norm_label": "get_job()"
     },
     {
       "label": "_queue_get()",
@@ -269,9 +239,9 @@
       "source_file": "server.py",
       "source_location": "L192",
       "_origin": "ast",
+      "id": "server_queue_get",
       "community": 6,
-      "norm_label": "_queue_get()",
-      "id": "server_queue_get"
+      "norm_label": "_queue_get()"
     },
     {
       "label": "Queue",
@@ -279,9 +249,9 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
+      "id": "queue",
       "community": 6,
-      "norm_label": "queue",
-      "id": "queue"
+      "norm_label": "queue"
     },
     {
       "label": "stream_job()",
@@ -289,9 +259,9 @@
       "source_file": "server.py",
       "source_location": "L200",
       "_origin": "ast",
+      "id": "server_stream_job",
       "community": 0,
-      "norm_label": "stream_job()",
-      "id": "server_stream_job"
+      "norm_label": "stream_job()"
     },
     {
       "label": "fold_sequence()",
@@ -299,9 +269,9 @@
       "source_file": "server.py",
       "source_location": "L248",
       "_origin": "ast",
+      "id": "server_fold_sequence",
       "community": 5,
-      "norm_label": "fold_sequence()",
-      "id": "server_fold_sequence"
+      "norm_label": "fold_sequence()"
     },
     {
       "label": "Request",
@@ -309,9 +279,9 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
+      "id": "request",
       "community": 5,
-      "norm_label": "request",
-      "id": "request"
+      "norm_label": "request"
     },
     {
       "label": "Protein Optimizer \u2014 Web Server  Usage:     pip install fastapi uvicorn     pytho",
@@ -319,9 +289,9 @@
       "source_file": "server.py",
       "source_location": "L1",
       "_origin": "ast",
+      "id": "server_rationale_1",
       "community": 0,
-      "norm_label": "protein optimizer \u2014 web server  usage:     pip install fastapi uvicorn     pytho",
-      "id": "server_rationale_1"
+      "norm_label": "protein optimizer \u2014 web server  usage:     pip install fastapi uvicorn     pytho"
     },
     {
       "label": "Serve a pre-converted multi-frame PDB of a saved BioEmu run (real .xtc     ensem",
@@ -329,9 +299,9 @@
       "source_file": "server.py",
       "source_location": "L93",
       "_origin": "ast",
+      "id": "server_rationale_93",
       "community": 7,
-      "norm_label": "serve a pre-converted multi-frame pdb of a saved bioemu run (real .xtc     ensem",
-      "id": "server_rationale_93"
+      "norm_label": "serve a pre-converted multi-frame pdb of a saved bioemu run (real .xtc     ensem"
     },
     {
       "label": "Proxy ESMFold structure prediction through the ESM Atlas public API.",
@@ -339,41 +309,21 @@
       "source_file": "server.py",
       "source_location": "L249",
       "_origin": "ast",
+      "id": "server_rationale_249",
       "community": 5,
-      "norm_label": "proxy esmfold structure prediction through the esm atlas public api.",
-      "id": "server_rationale_249"
+      "norm_label": "proxy esmfold structure prediction through the esm atlas public api."
     }
   ],
   "links": [
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "CLAUDE.md",
-      "source_location": "L1",
-      "weight": 1.0,
-      "source": "claude",
-      "target": "claude_protein_optimizer_evoemu",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "CLAUDE.md",
-      "source_location": "L3",
-      "weight": 1.0,
-      "source": "claude_protein_optimizer_evoemu",
-      "target": "claude_graphify",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
       "source_file": "protein_optimizer/run_store.py",
       "source_location": "L26",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "protein_optimizer_run_store",
-      "target": "protein_optimizer_run_store_connect"
+      "target": "protein_optimizer_run_store_connect",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -381,9 +331,9 @@
       "source_file": "protein_optimizer/run_store.py",
       "source_location": "L76",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "protein_optimizer_run_store",
-      "target": "protein_optimizer_run_store_create_run"
+      "target": "protein_optimizer_run_store_create_run",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -391,9 +341,9 @@
       "source_file": "protein_optimizer/run_store.py",
       "source_location": "L138",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "protein_optimizer_run_store",
-      "target": "protein_optimizer_run_store_fail_run"
+      "target": "protein_optimizer_run_store_fail_run",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -401,9 +351,9 @@
       "source_file": "protein_optimizer/run_store.py",
       "source_location": "L106",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "protein_optimizer_run_store",
-      "target": "protein_optimizer_run_store_finalize_run"
+      "target": "protein_optimizer_run_store_finalize_run",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -411,9 +361,9 @@
       "source_file": "protein_optimizer/run_store.py",
       "source_location": "L161",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "protein_optimizer_run_store",
-      "target": "protein_optimizer_run_store_get_run"
+      "target": "protein_optimizer_run_store_get_run",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -421,9 +371,9 @@
       "source_file": "protein_optimizer/run_store.py",
       "source_location": "L172",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "protein_optimizer_run_store",
-      "target": "protein_optimizer_run_store_get_run_rounds"
+      "target": "protein_optimizer_run_store_get_run_rounds",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -431,9 +381,9 @@
       "source_file": "protein_optimizer/run_store.py",
       "source_location": "L33",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "protein_optimizer_run_store",
-      "target": "protein_optimizer_run_store_init_db"
+      "target": "protein_optimizer_run_store_init_db",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -441,9 +391,9 @@
       "source_file": "protein_optimizer/run_store.py",
       "source_location": "L146",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "protein_optimizer_run_store",
-      "target": "protein_optimizer_run_store_list_runs"
+      "target": "protein_optimizer_run_store_list_runs",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -451,9 +401,9 @@
       "source_file": "protein_optimizer/run_store.py",
       "source_location": "L87",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "protein_optimizer_run_store",
-      "target": "protein_optimizer_run_store_record_round"
+      "target": "protein_optimizer_run_store_record_round",
+      "confidence_score": 1.0
     },
     {
       "relation": "rationale_for",
@@ -461,9 +411,9 @@
       "source_file": "protein_optimizer/run_store.py",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "protein_optimizer_run_store_rationale_1",
-      "target": "protein_optimizer_run_store"
+      "target": "protein_optimizer_run_store",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports_from",
@@ -472,9 +422,9 @@
       "source_file": "server.py",
       "source_location": "L38",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "server",
-      "target": "protein_optimizer_run_store"
+      "target": "protein_optimizer_run_store",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -483,9 +433,9 @@
       "source_file": "protein_optimizer/run_store.py",
       "source_location": "L26",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "protein_optimizer_run_store_connect",
-      "target": "connection"
+      "target": "connection",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -494,9 +444,9 @@
       "source_file": "protein_optimizer/run_store.py",
       "source_location": "L77",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "protein_optimizer_run_store_create_run",
-      "target": "protein_optimizer_run_store_connect"
+      "target": "protein_optimizer_run_store_connect",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -505,9 +455,9 @@
       "source_file": "protein_optimizer/run_store.py",
       "source_location": "L139",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "protein_optimizer_run_store_fail_run",
-      "target": "protein_optimizer_run_store_connect"
+      "target": "protein_optimizer_run_store_connect",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -516,9 +466,9 @@
       "source_file": "protein_optimizer/run_store.py",
       "source_location": "L107",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "protein_optimizer_run_store_finalize_run",
-      "target": "protein_optimizer_run_store_connect"
+      "target": "protein_optimizer_run_store_connect",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -527,9 +477,9 @@
       "source_file": "protein_optimizer/run_store.py",
       "source_location": "L162",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "protein_optimizer_run_store_get_run",
-      "target": "protein_optimizer_run_store_connect"
+      "target": "protein_optimizer_run_store_connect",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -538,9 +488,9 @@
       "source_file": "protein_optimizer/run_store.py",
       "source_location": "L173",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "protein_optimizer_run_store_get_run_rounds",
-      "target": "protein_optimizer_run_store_connect"
+      "target": "protein_optimizer_run_store_connect",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -549,9 +499,9 @@
       "source_file": "protein_optimizer/run_store.py",
       "source_location": "L34",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "protein_optimizer_run_store_init_db",
-      "target": "protein_optimizer_run_store_connect"
+      "target": "protein_optimizer_run_store_connect",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -560,9 +510,9 @@
       "source_file": "protein_optimizer/run_store.py",
       "source_location": "L147",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "protein_optimizer_run_store_list_runs",
-      "target": "protein_optimizer_run_store_connect"
+      "target": "protein_optimizer_run_store_connect",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -571,9 +521,9 @@
       "source_file": "protein_optimizer/run_store.py",
       "source_location": "L88",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "protein_optimizer_run_store_record_round",
-      "target": "protein_optimizer_run_store_connect"
+      "target": "protein_optimizer_run_store_connect",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -582,9 +532,9 @@
       "source_file": "protein_optimizer/run_store.py",
       "source_location": "L76",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "protein_optimizer_run_store_create_run",
-      "target": "any"
+      "target": "any",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -593,9 +543,9 @@
       "source_file": "protein_optimizer/run_store.py",
       "source_location": "L106",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "protein_optimizer_run_store_finalize_run",
-      "target": "any"
+      "target": "any",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -604,9 +554,9 @@
       "source_file": "protein_optimizer/run_store.py",
       "source_location": "L161",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "protein_optimizer_run_store_get_run",
-      "target": "any"
+      "target": "any",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -615,9 +565,9 @@
       "source_file": "protein_optimizer/run_store.py",
       "source_location": "L172",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "protein_optimizer_run_store_get_run_rounds",
-      "target": "any"
+      "target": "any",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -626,9 +576,9 @@
       "source_file": "protein_optimizer/run_store.py",
       "source_location": "L146",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "protein_optimizer_run_store_list_runs",
-      "target": "any"
+      "target": "any",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -637,9 +587,9 @@
       "source_file": "protein_optimizer/run_store.py",
       "source_location": "L87",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "protein_optimizer_run_store_record_round",
-      "target": "any"
+      "target": "any",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -648,9 +598,9 @@
       "source_file": "server.py",
       "source_location": "L17",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "server",
-      "target": "queue"
+      "target": "queue",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -658,9 +608,9 @@
       "source_file": "server.py",
       "source_location": "L248",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "server",
-      "target": "server_fold_sequence"
+      "target": "server_fold_sequence",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -668,9 +618,9 @@
       "source_file": "server.py",
       "source_location": "L186",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "server",
-      "target": "server_get_job"
+      "target": "server_get_job",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -678,9 +628,9 @@
       "source_file": "server.py",
       "source_location": "L83",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "server",
-      "target": "server_get_run"
+      "target": "server_get_run",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -688,9 +638,9 @@
       "source_file": "server.py",
       "source_location": "L78",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "server",
-      "target": "server_list_runs"
+      "target": "server_list_runs",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -698,9 +648,9 @@
       "source_file": "server.py",
       "source_location": "L192",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "server",
-      "target": "server_queue_get"
+      "target": "server_queue_get",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -708,9 +658,9 @@
       "source_file": "server.py",
       "source_location": "L55",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "server",
-      "target": "server_runrequest"
+      "target": "server_runrequest",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -718,9 +668,9 @@
       "source_file": "server.py",
       "source_location": "L92",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "server",
-      "target": "server_saved_trajectory"
+      "target": "server_saved_trajectory",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -728,9 +678,9 @@
       "source_file": "server.py",
       "source_location": "L73",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "server",
-      "target": "server_serve_dashboard"
+      "target": "server_serve_dashboard",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -738,9 +688,9 @@
       "source_file": "server.py",
       "source_location": "L68",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "server",
-      "target": "server_serve_index"
+      "target": "server_serve_index",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -748,9 +698,9 @@
       "source_file": "server.py",
       "source_location": "L104",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "server",
-      "target": "server_start_run"
+      "target": "server_start_run",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -758,9 +708,9 @@
       "source_file": "server.py",
       "source_location": "L200",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "server",
-      "target": "server_stream_job"
+      "target": "server_stream_job",
+      "confidence_score": 1.0
     },
     {
       "relation": "rationale_for",
@@ -768,9 +718,9 @@
       "source_file": "server.py",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "server_rationale_1",
-      "target": "server"
+      "target": "server",
+      "confidence_score": 1.0
     },
     {
       "relation": "inherits",
@@ -778,9 +728,9 @@
       "source_file": "server.py",
       "source_location": "L55",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "server_runrequest",
-      "target": "basemodel"
+      "target": "basemodel",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -789,9 +739,9 @@
       "source_file": "server.py",
       "source_location": "L104",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "server_start_run",
-      "target": "server_runrequest"
+      "target": "server_runrequest",
+      "confidence_score": 1.0
     },
     {
       "relation": "rationale_for",
@@ -799,9 +749,9 @@
       "source_file": "server.py",
       "source_location": "L93",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "server_rationale_93",
-      "target": "server_saved_trajectory"
+      "target": "server_saved_trajectory",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -810,9 +760,9 @@
       "source_file": "server.py",
       "source_location": "L106",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "server_start_run",
-      "target": "queue"
+      "target": "queue",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -821,9 +771,9 @@
       "source_file": "server.py",
       "source_location": "L192",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "server_queue_get",
-      "target": "queue"
+      "target": "queue",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -832,9 +782,9 @@
       "source_file": "server.py",
       "source_location": "L248",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "server_fold_sequence",
-      "target": "request"
+      "target": "request",
+      "confidence_score": 1.0
     },
     {
       "relation": "rationale_for",
@@ -842,11 +792,11 @@
       "source_file": "server.py",
       "source_location": "L249",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "server_rationale_249",
-      "target": "server_fold_sequence"
+      "target": "server_fold_sequence",
+      "confidence_score": 1.0
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "2a00d037c9922d504e5ab6c8682f5b9cb4855af7"
+  "built_at_commit": "828de6197134c802118f18fb11ff11719cd0b174"
 }

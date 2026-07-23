@@ -1,16 +1,16 @@
-# Graph Report - protein_optimizer  (2026-07-23)
+# Graph Report - protein_optimizer  (2026-07-02)
 
 ## Corpus Check
-- 28 files · ~37,815 words
+- 26 files · ~37,507 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 34 nodes · 48 edges · 9 communities (5 shown, 4 thin omitted)
+- 31 nodes · 46 edges · 8 communities (5 shown, 3 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `2a00d037`
+- Built from commit: `828de619`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -23,7 +23,6 @@
 - [[_COMMUNITY_fold_sequence|fold_sequence]]
 - [[_COMMUNITY_Queue|Queue]]
 - [[_COMMUNITY_saved_trajectory|saved_trajectory]]
-- [[_COMMUNITY_protein_optimizer (EvoEmu)|protein_optimizer (EvoEmu)]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `_connect()` - 10 edges
@@ -50,7 +49,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (9 total, 4 thin omitted)
+## Communities (8 total, 3 thin omitted)
 
 ### Community 1 - "Any"
 Cohesion: 0.40
@@ -73,18 +72,16 @@ Cohesion: 0.67
 Nodes (3): Request, fold_sequence(), Proxy ESMFold structure prediction through the ESM Atlas public API.
 
 ## Knowledge Gaps
-- **1 isolated node(s):** `graphify`
-  These have ≤1 connection - possible missing edges or undocumented components.
-- **4 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **3 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `fold_sequence()` connect `fold_sequence` to `server.py`?**
-  _High betweenness centrality (0.108) - this node is a cross-community bridge._
+  _High betweenness centrality (0.131) - this node is a cross-community bridge._
 - **Why does `_connect()` connect `_connect` to `Any`, `run_store.py`?**
-  _High betweenness centrality (0.079) - this node is a cross-community bridge._
+  _High betweenness centrality (0.095) - this node is a cross-community bridge._
 - **Why does `RunRequest` connect `RunRequest` to `server.py`?**
-  _High betweenness centrality (0.055) - this node is a cross-community bridge._
-- **What connects `graphify`, `Run Store — SQLite persistence for optimization runs.  Records every server-trig`, `Protein Optimizer — Web Server  Usage:     pip install fastapi uvicorn     pytho` to the rest of the system?**
-  _5 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _High betweenness centrality (0.067) - this node is a cross-community bridge._
+- **What connects `Run Store — SQLite persistence for optimization runs.  Records every server-trig`, `Protein Optimizer — Web Server  Usage:     pip install fastapi uvicorn     pytho`, `Serve a pre-converted multi-frame PDB of a saved BioEmu run (real .xtc     ensem` to the rest of the system?**
+  _4 weakly-connected nodes found - possible documentation gaps or missing edges._
