@@ -6,5 +6,6 @@
   "4": "RunRequest",
   "5": "fold_sequence",
   "6": "Queue",
-  "7": "saved_trajectory"
+  "7": "saved_trajectory",
+  "8": "protein_optimizer (EvoEmu)"
 }
