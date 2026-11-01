@@ -5,17 +5,17 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "protein-optimizer"
 version = "0.1.0"
-description = "Evolutionary protein sequence optimization using Genetic Algorithms, BioEmu, and ESM-2"
+description = "Evolutionary protein sequence optimization using Genetic Algorithms, BioEmu, and Dyna-1"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
-keywords = ["protein", "optimization", "genetic-algorithm", "ESM-2", "BioEmu", "computational-biology"]
+keywords = ["protein", "optimization", "genetic-algorithm", "Dyna-1", "BioEmu", "computational-biology"]
 
 dependencies = [
     "numpy>=1.24",
     "pyyaml>=6.0",
     "torch>=2.0",
-    "transformers>=4.38",     # ESM-2 via HuggingFace
+    "transformers>=4.38",     # Dyna-1 dependency (see README)
 ]
 
 [project.optional-dependencies]

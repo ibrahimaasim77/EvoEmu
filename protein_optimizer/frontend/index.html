@@ -465,9 +465,9 @@
     </div>
     <div class="brand"><span class="brand-mark">Evo</span><span class="brand-mark2">Emu</span></div>
     <h1>Engineer protein sequences toward a target conformation</h1>
-    <p class="tagline">In&nbsp;silico directed evolution. ESM-2 proposes mutations, BioEmu scores each candidate's conformational landscape, and a genetic search evolves the sequence toward your target.</p>
+    <p class="tagline">In&nbsp;silico directed evolution. Dyna-1 proposes mutations, BioEmu scores each candidate's conformational landscape, and a genetic search evolves the sequence toward your target.</p>
     <div class="metrics">
-      <div class="metric"><div class="metric-val">ESM-2</div><div class="metric-lbl">guided mutation</div></div>
+      <div class="metric"><div class="metric-val">Dyna-1</div><div class="metric-lbl">guided mutation</div></div>
       <div class="metric"><div class="metric-val">BioEmu</div><div class="metric-lbl">conformational scoring</div></div>
       <div class="metric"><div class="metric-val">Top&#8209;20</div><div class="metric-lbl">elite per round</div></div>
     </div>
@@ -625,7 +625,7 @@
   <section class="method">
     <div class="method-card">
       <div class="method-num">01</div>
-      <div class="method-ttl">ESM-2 guided mutation</div>
+      <div class="method-ttl">Dyna-1 guided mutation</div>
       <div class="method-txt">A protein language model proposes substitutions most likely to preserve a foldable, stable backbone — far smarter than random point mutations.</div>
     </div>
     <div class="method-card">
@@ -645,7 +645,7 @@
     <div class="card">
       <div class="card-label">Genetic algorithm — how the search keeps the top 20</div>
       <div class="ga-steps">
-        <span class="ga-step">1 · Generate <b>~N</b> candidates (ESM-2)</span>
+        <span class="ga-step">1 · Generate <b>~N</b> candidates (Dyna-1)</span>
         <span class="ga-arrow">→</span>
         <span class="ga-step">2 · Score each with <b>BioEmu</b> (LLR)</span>
         <span class="ga-arrow">→</span>
@@ -1140,7 +1140,7 @@
       target_llr:       currentMode === 'fit_to_llr' ? parseFloat(document.getElementById('targetLlr').value) : null,
       healthy_sequence: currentMode === 'fit_to_structure' ? _pdbSequence : null,
       mock:             true,   // synthetic scoring (toggle removed; behaviour unchanged)
-      random_mutations: false,   // always ESM-2
+      random_mutations: false,   // always Dyna-1
       population_size:  parseInt(document.getElementById('popSize').value)    || 20,
       max_generations:  parseInt(document.getElementById('maxGen').value)     || 3,
       num_samples:      parseInt(document.getElementById('numSamples').value) || 10,
@@ -1378,7 +1378,7 @@
                (d.target != null ? ` · target <b>${(+d.target).toFixed(4)}</b>` : '')); break;
       case 'generating':
         document.getElementById('actRound').textContent = `${d.round}/${d.total_rounds}`;
-        actLog(`<span class="al-round">Round ${d.round}</span> — generating ${d.count} candidates via ${d.method === 'esm2' ? 'ESM-2' : 'random'} mutations`); break;
+        actLog(`<span class="al-round">Round ${d.round}</span> — generating ${d.count} candidates via ${d.method === 'dyna1' ? 'Dyna-1' : 'random'} mutations`); break;
       case 'scoring':
         actLog(`<span class="al-round">Round ${d.round}</span> — scoring ${d.count} candidates with BioEmu…`); break;
       case 'round_scored':

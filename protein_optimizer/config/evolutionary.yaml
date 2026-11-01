@@ -15,13 +15,17 @@ wildtype_sequence: ""
 target_parameter: null
 healthy_sequence: ""
 
-esm2:
-  model_name: "facebook/esm2_t33_650M_UR50D"
+dyna1:
+  repo_path: "Dyna-1"      # git clone https://github.com/WaymentSteeleLab/Dyna-1
+  weights_path: null       # null = <repo_path>/model/weights/dyna1.pt
   device: "cuda"
-  batch_size: 8
+  batch_size: 16           # mutants scored per forward pass
   top_k_candidates: 5
-  temperature: 1.0
-  cache_dir: null
+  temperature: 1.0       # z-scored; lower = greedier
+  direction: "up"          # "up" = more µs–ms dynamics, "down" = more rigid
+  target_positions: null   # 0-based residue list to focus on; null = whole chain
+  half_precision: true     # bf16 autocast on CUDA
+  mock: false              # true = synthetic scores, no model/weights needed
 
 bioemu:
   model_path: null      # null = use HuggingFace default weights
@@ -41,8 +45,8 @@ scoring:
   wildtype_proximity_weight: 0.30
 
 mutation:
-  strategy: "esm_guided"           # ESM-2 used for round-1 proposals
-  max_mutations_per_sequence: 3    # max point mutations per ESM-2 proposal
+  strategy: "dyna1_guided"           # Dyna-1 used for round-1 proposals
+  max_mutations_per_sequence: 3    # max point mutations per Dyna-1 proposal
   allowed_positions: null          # null = all positions
   mutation_rate: 0.1
   crossover_strategy: "two_point"

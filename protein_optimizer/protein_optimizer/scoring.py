@@ -9,7 +9,7 @@ Design:
   - Weights come from ScoringConfig — fully config-driven, no hard-coded constants.
   - All component scorers are pluggable: subclass ComponentScorer and register.
 
-The GA only ever sees a float. It has no knowledge of BioEmu, ESM-2, or biology.
+The GA only ever sees a float. It has no knowledge of BioEmu, Dyna-1, or biology.
 
 Scoring components
 ------------------

@@ -24,10 +24,7 @@
   "22": "ComponentScorer",
   "23": "._aggregate",
   "24": "._from_dict",
-  "25": ".__init__",
-  "26": ".crossover",
   "27": "practice.sh",
   "28": "setup_vm.sh",
-  "29": "protein-optimizer",
-  "30": "__init__.py"
+  "29": "protein-optimizer"
 }

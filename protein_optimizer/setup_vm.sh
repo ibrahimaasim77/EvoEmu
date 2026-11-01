@@ -12,20 +12,20 @@
 #
 set -euo pipefail
 
-echo "=== 1/5  Checking GPU ==="
+echo "=== 1/6  Checking GPU ==="
 if ! command -v nvidia-smi >/dev/null 2>&1; then
     echo "ERROR: nvidia-smi not found. This needs a GPU VM with NVIDIA drivers." >&2
     exit 1
 fi
 nvidia-smi --query-gpu=name,memory.total,driver_version --format=csv,noheader
 
-echo "=== 2/5  Checking Python (need 3.10+) ==="
+echo "=== 2/6  Checking Python (need 3.10+) ==="
 PY=python3
 $PY -c 'import sys; assert sys.version_info >= (3,10), "Python 3.10+ required, found %s" % sys.version' \
     || { echo "ERROR: Python 3.10+ required." >&2; exit 1; }
 $PY --version
 
-echo "=== 3/5  Creating virtual environment (.venv) ==="
+echo "=== 3/6  Creating virtual environment (.venv) ==="
 if [ ! -d .venv ]; then
     $PY -m venv .venv
 fi
@@ -33,15 +33,32 @@ fi
 source .venv/bin/activate
 pip install --upgrade pip wheel
 
-echo "=== 4/5  Installing BioEmu + dependencies ==="
+echo "=== 4/6  Installing BioEmu + dependencies ==="
 # BioEmu core (MSA tooling is bundled; no separate install needed).
 pip install "bioemu[cuda]"
 # Project dependencies.
 pip install torch transformers numpy pyyaml biopython
 
-echo "=== 5/5  Mock smoke test (no GPU work, verifies wiring) ==="
-python main.py --config config/evolutionary.yaml --mock --random-mutations \
-    --set ga.population_size=6 --set ga.max_generations=1 --set esm2.device=cpu
+echo "=== 5/6  Installing Dyna-1 (mutation oracle) ==="
+# Clone into ./Dyna-1 (the default dyna1.repo_path).
+if [ ! -d Dyna-1 ]; then
+    git clone --depth 1 https://github.com/WaymentSteeleLab/Dyna-1 Dyna-1
+fi
+# Install its requirements WITHOUT its torch/transformers pins, which would
+# clobber the versions BioEmu installed above.
+grep -viE '^\s*(torch|torchaudio|torchvision|torchtext|transformers)\b' Dyna-1/requirements.txt \
+    > .dyna1-requirements.txt
+pip install -r .dyna1-requirements.txt
+rm -f .dyna1-requirements.txt
+pip install -U "huggingface_hub[cli]"
+huggingface-cli download gelnesr/Dyna-1 --include "weights/*" --local-dir Dyna-1/model/
+# NOTE: Dyna-1 downloads the open ESM-3 base model (esm3_sm_open_v1) from
+# HuggingFace on first load. If that repo is gated for you, accept its license
+# on huggingface.co and run `huggingface-cli login` first.
+
+echo "=== 6/6  Mock smoke test (no GPU work, verifies wiring) ==="
+python main.py --config config/evolutionary.yaml --mock \
+    --set ga.population_size=6 --set ga.max_generations=1 --set dyna1.device=cpu
 
 cat <<'EOF'
 

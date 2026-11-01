@@ -4,11 +4,11 @@ Mutation and Crossover Module
 Provides:
   - BaseMutator: abstract contract for all mutators
   - RandomMutator: uniform random amino acid substitutions (baseline)
-  - ESMGuidedMutator: ESM-2 log-prob weighted substitutions (preferred)
+  - Dyna1GuidedMutator: Dyna-1 score weighted substitutions (preferred)
   - CrossoverOperator: single-point, two-point, and uniform crossover
 
 The GA only interacts with BaseMutator and CrossoverOperator.
-BioEmu/ESM2 are never imported here directly — only ESM2MutationProposer
+BioEmu/Dyna-1 are never imported here directly — only Dyna1MutationProposer
 is injected at construction time, keeping modules decoupled.
 """
 
@@ -19,7 +19,7 @@ from abc import ABC, abstractmethod
 from typing import Dict, List, Optional, Tuple
 
 from .config import MutationConfig
-from .esm import AMINO_ACIDS, ESM2MutationProposer
+from .dyna1 import AMINO_ACIDS, Dyna1MutationProposer
 
 
 # ---------------------------------------------------------------------------
@@ -89,36 +89,36 @@ class RandomMutator(BaseMutator):
 
 
 # ---------------------------------------------------------------------------
-# ESM-2 guided mutator
+# Dyna-1 guided mutator
 # ---------------------------------------------------------------------------
 
 
-class ESMGuidedMutator(BaseMutator):
+class Dyna1GuidedMutator(BaseMutator):
     """
-    Mutation operator that uses ESM-2 log-probabilities to bias substitutions
-    toward biologically plausible replacements.
+    Mutation operator that uses Dyna-1 saturation-scan scores to bias substitutions
+    toward the configured dynamics direction.
 
     Sampling strategy:
-      - For each selected position, obtain top-k candidates from ESM-2.
+      - For each selected position, obtain top-k candidates from Dyna-1.
       - Sample from those candidates using a softmax over their log-probs
         (so higher-probability AAs are preferred but not deterministic).
 
-    Falls back to RandomMutator behaviour when ESM-2 proposals are unavailable.
+    Falls back to a random substitution only when a position has no usable candidate.
 
     Args:
         config: MutationConfig.
-        esm_proposer: A fully-initialised ESM2MutationProposer.
+        dyna1_proposer: A fully-initialised Dyna1MutationProposer.
         rng: shared Random instance for reproducibility.
     """
 
     def __init__(
         self,
         config: MutationConfig,
-        esm_proposer: ESM2MutationProposer,
+        dyna1_proposer: Dyna1MutationProposer,
         rng: random.Random,
     ) -> None:
         super().__init__(config, rng)
-        self._esm = esm_proposer
+        self._dyna1 = dyna1_proposer
         self._fallback = RandomMutator(config, rng)
 
     def mutate(self, sequence: str) -> str:
@@ -129,11 +129,9 @@ class ESMGuidedMutator(BaseMutator):
 
         chosen_positions = self.rng.sample(positions, min(n_mutations, len(positions)))
 
-        try:
-            proposals = self._esm.propose(sequence, chosen_positions)
-        except Exception:
-            # Graceful fallback when ESM-2 is unavailable
-            return self._fallback.mutate(sequence)
+        # Errors (missing repo/weights, CUDA failure) propagate on purpose: a silent
+        # random fallback would make a "Dyna-1 guided" run quietly meaningless.
+        proposals = self._dyna1.propose(sequence, chosen_positions)
 
         result = sequence
         for pos in chosen_positions:
@@ -331,24 +329,24 @@ class CommonAncestorCrossover:
 def build_mutator(
     config: MutationConfig,
     rng: random.Random,
-    esm_proposer: Optional[ESM2MutationProposer] = None,
+    dyna1_proposer: Optional[Dyna1MutationProposer] = None,
 ) -> BaseMutator:
     """
     Construct the appropriate mutator given the strategy in config.
 
-    Pass esm_proposer=None to force RandomMutator regardless of config.
+    Pass dyna1_proposer=None to force RandomMutator regardless of config.
     """
-    if config.strategy == "esm_guided":
-        if esm_proposer is None:
+    if config.strategy == "dyna1_guided":
+        if dyna1_proposer is None:
             raise ValueError(
-                "ESM-2 guided mutation requires an ESM2MutationProposer instance. "
+                "Dyna-1 guided mutation requires an Dyna1MutationProposer instance. "
                 "Either pass one or set mutation.strategy = 'random'."
             )
-        return ESMGuidedMutator(config, esm_proposer, rng)
+        return Dyna1GuidedMutator(config, dyna1_proposer, rng)
     elif config.strategy == "random":
         return RandomMutator(config, rng)
     else:
         raise ValueError(
             f"Unknown mutation strategy: {config.strategy!r}. "
-            "Valid options: 'random', 'esm_guided'."
+            "Valid options: 'random', 'dyna1_guided'."
         )

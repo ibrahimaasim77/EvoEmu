@@ -2,8 +2,8 @@
 
 **In-silico directed evolution for proteins.** EvoEmu evolves a protein sequence
 toward a target *conformational landscape* — not just a single static fold — by
-pairing a **genetic algorithm** with **Meta ESM-2** (to propose biologically
-plausible mutations) and **Microsoft BioEmu** (to score each candidate's
+pairing a **genetic algorithm** with **Dyna-1** (to propose mutations by
+saturation-scanning predicted µs–ms dynamics) and **Microsoft BioEmu** (to score each candidate's
 structural ensemble).
 
 It ships with two ways to drive it:
@@ -13,7 +13,7 @@ It ships with two ways to drive it:
 - **A command-line tool** — for scripted / GPU-VM runs.
 
 > This is a pure **inference + optimization** system. No models are trained.
-> ESM-2 only proposes mutations, BioEmu only evaluates structures, and the
+> Dyna-1 only proposes mutations, BioEmu only evaluates structures, and the
 > genetic algorithm drives the search.
 
 ---
@@ -23,7 +23,7 @@ It ships with two ways to drive it:
 You give EvoEmu a starting protein sequence and a **target**. It runs a budgeted
 genetic search:
 
-1. **Generate** ~N candidate mutants from the current population (ESM-2 guided).
+1. **Generate** ~N candidate mutants from the current population (Dyna-1 guided).
 2. **Score** each candidate with BioEmu — a log-likelihood ratio (LLR) between
    two structural states.
 3. **Select** the top-20 elite.
@@ -103,7 +103,7 @@ EvoEmu
 ├── Web UI            frontend/index.html   — dashboard, 3D viewers, live feed
 ├── Web server        server.py             — FastAPI; /api/run, /api/fold, SSE stream
 ├── CLI               main.py               — argparse entry point
-├── Search engine     protein_optimizer/    — genetic algorithm, BioEmu, ESM-2 mutation
+├── Search engine     protein_optimizer/    — genetic algorithm, BioEmu, Dyna-1 mutation
 └── Config            config/*.yaml         — population size, generations, samples, target
 ```
 
@@ -133,14 +133,14 @@ python3 main.py --config config/evolutionary.yaml \
 ```
 
 Key knobs: `ga.population_size`, `ga.max_generations`, `bioemu.num_samples`,
-`mutation.strategy` (`esm_guided` | `random`), and `bioemu.mock`.
+`mutation.strategy` (`dyna1_guided` | `random`), and `bioemu.mock`.
 
 ---
 
 ## Tech stack
 
 - **Python 3.10+**, FastAPI + Uvicorn (web server)
-- **PyTorch** + HuggingFace **Transformers** (ESM-2)
+- **PyTorch** + HuggingFace **Transformers**
 - **BioEmu** (structural-ensemble scoring; CUDA + model weights for real runs)
 - **3Dmol.js** and **ESMFold** (in-browser structure visualization)
 - No build step — the frontend is a single static `index.html`

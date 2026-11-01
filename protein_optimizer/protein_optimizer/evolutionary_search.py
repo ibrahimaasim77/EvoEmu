@@ -4,7 +4,7 @@ Evolutionary Search Pipeline
 Implements the team's target algorithm:
 
   1. Score the reference sequence with BioEmu → reference_llr  (e.g. -2)
-  2. Use ESM-2 to generate a batch of 100 candidate mutations
+  2. Use Dyna-1 to generate a batch of 100 candidate mutations
   3. Score all 100 with BioEmu → pick the top 20 by LLR
   4. Find positions that are IDENTICAL across all 20 (the "common ancestor")
   5. Crossover: fix those positions, randomly recombine the rest → 100 new sequences
@@ -35,8 +35,8 @@ from typing import Dict, List, Optional, Tuple
 
 from .bioemu import BaseStructuralBackend, BioEmuOutput, build_bioemu_backend, write_trajectory_files
 from .config import OptimizationConfig
-from .esm import ESM2MutationProposer
-from .mutation import CommonAncestorCrossover, ESMGuidedMutator, RandomMutator, MutationConfig
+from .dyna1 import Dyna1MutationProposer
+from .mutation import CommonAncestorCrossover, Dyna1GuidedMutator, RandomMutator, MutationConfig
 
 logger = logging.getLogger(__name__)
 
@@ -101,7 +101,7 @@ class BudgetedEvolutionarySearch:
       - ga.elite_size         : elite pool size used for crossover (default: 20)
       - ga.max_generations    : max rounds before stopping (default: 5)
       - bioemu.*              : BioEmu inference settings
-      - esm2.*                : ESM-2 settings for round-1 mutation proposals
+      - dyna1.*               : Dyna-1 settings for round-1 mutation proposals
       - mutation.*            : max_mutations_per_sequence, allowed_positions, etc.
 
     Total mutations scored = population_size × max_generations (≤ 500 by default).
@@ -119,10 +119,10 @@ class BudgetedEvolutionarySearch:
 
         self._bioemu = bioemu_backend or build_bioemu_backend(config.bioemu)
         self._crossover = CommonAncestorCrossover(self._rng)
-        self._use_esm = config.mutation.strategy == "esm_guided"
-        # Only instantiate ESM-2 if actually needed — avoids any HF download otherwise
-        self._esm: Optional[ESM2MutationProposer] = (
-            ESM2MutationProposer(config.esm2) if self._use_esm else None
+        self._use_dyna1 = config.mutation.strategy == "dyna1_guided"
+        # Only instantiate Dyna-1 if actually needed
+        self._dyna1: Optional[Dyna1MutationProposer] = (
+            Dyna1MutationProposer(config.dyna1) if self._use_dyna1 else None
         )
 
         self._batch_size = config.ga.population_size   # 100
@@ -202,7 +202,7 @@ class BudgetedEvolutionarySearch:
             remaining = self._batch_size
 
             if round_idx == 0:
-                src = "ESM-2 guided mutations" if self._use_esm else "random mutations"
+                src = "Dyna-1 guided mutations" if self._use_dyna1 else "random mutations"
                 if self._verbose:
                     self._print_round_header(round_idx + 1, self._max_rounds,
                                              f"generating {remaining} candidates via {src}")
@@ -210,12 +210,12 @@ class BudgetedEvolutionarySearch:
                     "type": "generating",
                     "round": round_idx + 1,
                     "total_rounds": self._max_rounds,
-                    "method": "esm2" if self._use_esm else "random",
+                    "method": "dyna1" if self._use_dyna1 else "random",
                     "count": remaining,
                 })
-                if self._use_esm:
-                    logger.info("Round 1 — ESM-2 generating %d candidates ...", remaining)
-                    candidates = self._esm2_generate(current_parents, remaining)
+                if self._use_dyna1:
+                    logger.info("Round 1 — Dyna-1 generating %d candidates ...", remaining)
+                    candidates = self._dyna1_generate(current_parents, remaining)
                 else:
                     logger.info("Round 1 — random mutations generating %d candidates ...", remaining)
                     candidates = self._random_generate(current_parents, remaining)
@@ -242,7 +242,7 @@ class BudgetedEvolutionarySearch:
                 })
                 candidates = self._crossover.generate_offspring(current_parents, remaining)
 
-            new_candidates = [s for s in candidates if s not in all_scores and s != original]
+            new_candidates = [s for s in dict.fromkeys(candidates) if s not in all_scores and s != original]
             if not new_candidates:
                 logger.warning("Round %d produced no new unique candidates — stopping.", round_idx + 1)
                 if self._verbose:
@@ -385,22 +385,22 @@ class BudgetedEvolutionarySearch:
         return 0.0
 
     def _random_generate(self, parents: List[str], n: int) -> List[str]:
-        """Generate `n` candidates via random amino acid substitutions (no HF download)."""
+        """Generate `n` candidates via random amino acid substitutions (no model needed)."""
         mutator = RandomMutator(config=self.config.mutation, rng=self._rng)
         return [mutator.mutate(self._rng.choice(parents)) for _ in range(n)]
 
-    def _esm2_generate(self, parents: List[str], n: int) -> List[str]:
+    def _dyna1_generate(self, parents: List[str], n: int) -> List[str]:
         """
-        Generate `n` mutation candidates via ESM-2.
+        Generate `n` mutation candidates via Dyna-1.
 
         For each slot, picks a random parent and proposes a mutation using the
-        ESM-2 masked-LM model (biologically guided substitution).
+        Dyna-1 saturation scan (dynamics-guided substitution).
         """
         mut_cfg = self.config.mutation
-        # Build a one-off ESMGuidedMutator for this call
-        mutator = ESMGuidedMutator(
+        # Build a one-off Dyna1GuidedMutator for this call
+        mutator = Dyna1GuidedMutator(
             config=mut_cfg,
-            esm_proposer=self._esm,
+            dyna1_proposer=self._dyna1,
             rng=self._rng,
         )
 

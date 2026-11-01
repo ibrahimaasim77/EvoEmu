@@ -1,7 +1,7 @@
 """
 Protein Optimization — Entry Point
 
-Default usage (runs evolutionary search with ESM-2 + BioEmu):
+Default usage (runs evolutionary search with Dyna-1 + BioEmu):
 
     python main.py --config config/evolutionary.yaml
 
@@ -59,7 +59,7 @@ def format_mutations(original: str, variant: str) -> str:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Protein Sequence Optimization — ESM-2 mutations scored by BioEmu LLR",
+        description="Protein Sequence Optimization — Dyna-1 mutations scored by BioEmu LLR",
         formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument(
@@ -92,7 +92,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--random-mutations",
         action="store_true",
-        help="Use random mutations instead of ESM-2 (no HuggingFace download needed)",
+        help="Use random mutations instead of Dyna-1 (no model/weights needed)",
     )
     parser.add_argument(
         "--verbose",
@@ -150,10 +150,11 @@ def main() -> None:
         cfg.healthy_sequence = args.healthy_sequence.upper().strip()
     if args.mock:
         cfg.bioemu.mock = True
+        cfg.dyna1.mock = True
     if args.random_mutations:
         cfg.mutation.strategy = "random"
     else:
-        cfg.mutation.strategy = "esm_guided"
+        cfg.mutation.strategy = "dyna1_guided"
 
     # Configure logging
     logging.basicConfig(
@@ -165,7 +166,7 @@ def main() -> None:
     print(f"\nStarting evolutionary search")
     print(f"  Sequence  : {cfg.original_sequence[:60]}{'...' if len(cfg.original_sequence) > 60 else ''}")
     print(f"  Length    : {len(cfg.original_sequence)} residues")
-    print(f"  Strategy  : {'ESM-2 guided' if cfg.mutation.strategy == 'esm_guided' else 'random'} mutations")
+    print(f"  Strategy  : {'Dyna-1 guided' if cfg.mutation.strategy == 'dyna1_guided' else 'random'} mutations")
     print(f"  Rounds    : {cfg.ga.max_generations}  ×  {cfg.ga.population_size} candidates  "
           f"= {cfg.ga.max_generations * cfg.ga.population_size} total")
     if cfg.healthy_sequence:

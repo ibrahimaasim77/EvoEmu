@@ -2,9 +2,9 @@
 
 An industrial-grade evolutionary optimization framework for protein sequence design.
 
-Combines a **Genetic Algorithm (GA)** with **BioEmu** structural-ensemble inference and **Meta ESM-2** guided mutations to evolve protein sequences toward a desired **conformational landscape**, not just a single static fold.
+Combines a **Genetic Algorithm (GA)** with **BioEmu** structural-ensemble inference and **Dyna-1** guided mutations to evolve protein sequences toward a desired **conformational landscape**, not just a single static fold.
 
-> **For AI assistants reading this:** This is a pure inference + optimization system. We are NOT training any models. ESM-2 is used only to propose biologically plausible mutations. BioEmu is used only to evaluate structural quality. The GA drives the search. Every component is modular and swappable.
+> **For AI assistants reading this:** This is a pure inference + optimization system. We are NOT training any models. Dyna-1 is used only to propose mutations (saturation scan of per-residue µs–ms exchange probability). BioEmu is used only to evaluate structural quality. The GA drives the search. Every component is modular and swappable.
 
 ---
 
@@ -150,7 +150,7 @@ List them: `ls -R results/trajectories/`
 | `--set ga.population_size=N` | Candidates generated per round |
 | `--set ga.max_generations=N` | Number of rounds |
 | `--mock` | Synthetic BioEmu (no GPU) for testing |
-| `--random-mutations` | Skip ESM-2; use random mutations |
+| `--random-mutations` | Skip Dyna-1; use random mutations |
 | `--verbose` | Print the per-round scoring tables |
 
 After the first run caches the weights, you can go fully offline:
@@ -207,7 +207,7 @@ Given:
 - An **original protein sequence** (single-letter amino acid codes)
 - A **target conformational landscape** represented by a BioEmu structural ensemble
 - A **BioEmu model** that generates structural ensembles for candidate sequences
-- A **pretrained ESM-2 model** that predicts biologically plausible amino acid substitutions
+- The **pretrained Dyna-1 model** ([WaymentSteeleLab/Dyna-1](https://github.com/WaymentSteeleLab/Dyna-1)), which predicts per-residue µs–ms exchange probability and is used to rank substitutions
 
 Goal: Find a mutated sequence whose **equilibrium ensemble** matches the target landscape, using evolutionary search.
 
@@ -240,7 +240,7 @@ We are NOT training models. We are doing inference-guided optimization.
 │                    │  select → crossover      │                     │
 │                    │       → mutate           │ ◄── MutationConfig  │
 │                    │           │              │                     │
-│                    │      ESM-2 proposals     │ ◄── ESM2Config      │
+│                    │      Dyna-1 proposals     │ ◄── Dyna1Config      │
 │                    └─────────────────────────┘                     │
 │                                  │                                  │
 │                    OptimizationTracker (analysis.py)                │
@@ -265,23 +265,23 @@ cfg.bioemu.mock = True          # synthetic outputs, no GPU
 cfg.ga.population_size = 50
 ```
 
-Sub-configs: `ESM2Config`, `BioEmuConfig`, `ScoringConfig`, `MutationConfig`, `GAConfig`, `LoggingConfig`.
+Sub-configs: `Dyna1Config`, `BioEmuConfig`, `ScoringConfig`, `MutationConfig`, `GAConfig`, `LoggingConfig`.
 
 ---
 
-### `esm.py` — ESM-2 Mutation Proposal Engine
+### `dyna1.py` — Dyna-1 Mutation Proposal Engine
 
-Wraps Meta's ESM-2 (via HuggingFace) as a **mutation oracle**. Given a sequence and a target position, it masks that position and uses ESM-2's masked language model to return the top-k most biologically plausible amino acid substitutions, ranked by log-probability.
+Wraps Dyna-1 (ESM-3 variant, sequence-only) as a **mutation oracle**. Dyna-1 has no amino-acid head, so for each target position it scores all 19 single-point mutants and ranks them by the change in mean `p_exchange` (whole chain, or `dyna1.target_positions`), signed by `dyna1.direction` (`up` = more dynamic, `down` = more rigid). Requires a clone of the Dyna-1 repo plus weights (see `dyna1.py` docstring); `dyna1.mock=true` (set automatically by `--mock`) uses synthetic scores.
 
-**Key class:** `ESM2MutationProposer`
+**Key class:** `Dyna1MutationProposer`
 
 ```python
-proposer = ESM2MutationProposer(cfg.esm2)
+proposer = Dyna1MutationProposer(cfg.dyna1)
 candidates = proposer.propose(sequence="MKTLL...", positions=[5, 12])
 # candidates: {5: [MutationCandidate(pos=5, A→G, log_prob=-0.3), ...], ...}
 ```
 
-**Important:** ESM-2 is only ever called inside the mutation step. It never touches scoring or the GA directly. It is lazy-loaded — no GPU cost unless `strategy="esm_guided"`.
+**Important:** Dyna-1 is only ever called inside the mutation step. It never touches scoring or the GA directly. It is lazy-loaded — no GPU cost unless `strategy="dyna1_guided"`.
 
 ---
 
@@ -293,7 +293,7 @@ Three classes, one abstract base:
 |---|---|
 | `BaseMutator` | Abstract contract. Implement `mutate(sequence) → str`. |
 | `RandomMutator` | Picks random positions, substitutes random amino acids. Baseline. |
-| `ESMGuidedMutator` | Uses ESM-2 log-prob weighted sampling. Biologically smarter. |
+| `Dyna1GuidedMutator` | Uses Dyna-1 score-weighted sampling. |
 | `CrossoverOperator` | Recombines two parent sequences. Supports `single_point`, `two_point`, `uniform`. |
 
 Use `build_mutator(config, rng, esm_proposer)` as the factory — it returns the right mutator based on `config.strategy`.
@@ -394,7 +394,7 @@ A **biology-agnostic** evolutionary optimiser. It operates on:
 - `population: List[str]` — the sequences (strings)
 - `scores: List[float]` — fitness values from the scoring function
 
-It has zero knowledge of amino acids, BioEmu, or ESM-2.
+It has zero knowledge of amino acids, BioEmu, or Dyna-1.
 
 **GA loop per generation:**
 1. Evaluate population via injected `fitness_fn`
@@ -417,7 +417,7 @@ It has zero knowledge of amino acids, BioEmu, or ESM-2.
 
 `ProteinOptimizationPipeline` is the single entry point. It:
 1. Validates the config and original sequence
-2. Constructs all sub-components (ESM-2, BioEmu, scorer, mutator, crossover, GA, tracker)
+2. Constructs all sub-components (Dyna-1, BioEmu, scorer, mutator, crossover, GA, tracker)
 3. Builds the initial population (original + mutant copies)
 4. Runs `GeneticAlgorithm.run()`, injecting `_evaluate_population` as the fitness callable
 5. Exports results via `OptimizationTracker`
@@ -480,7 +480,7 @@ build_initial_population()
 │      two_point / single_point        │
 │                                      │
 │ 5. Mutator.mutate_population()       │
-│      ESM-2 proposes substitutions    │
+│      Dyna-1 proposes substitutions    │
 │      Weighted sampling from top-k    │
 │                                      │
 │ 6. OptimizationTracker.on_gen()      │
@@ -506,7 +506,7 @@ protein_optimizer/
 ├── protein_optimizer/          # Main package
 │   ├── __init__.py             # Public API surface
 │   ├── config.py               # All config dataclasses
-│   ├── esm.py                  # ESM-2 mutation proposals
+│   ├── dyna1.py                # Dyna-1 mutation proposals
 │   ├── mutation.py             # Random + ESM-guided mutators, crossover
 │   ├── bioemu.py               # BioEmu wrapper + mock backend
 │   ├── scoring.py              # Composite fitness scoring function
@@ -538,7 +538,7 @@ protein_optimizer/
 pip install -e ".[dev]"
 ```
 
-This installs: `numpy`, `pyyaml`, `torch`, `transformers` (for ESM-2), `pytest`.
+This installs: `numpy`, `pyyaml`, `torch`, `transformers`, `pytest`.
 
 **BioEmu** must be installed separately — it requires CUDA and large model weights:
 ```bash
@@ -554,7 +554,7 @@ bash setup_vm.sh
 
 **No GPU / testing without models:**
 
-Set `bioemu.mock=true` in your config or pass `--mock` on the CLI. Set `mutation.strategy=random` to skip ESM-2 loading. The full GA loop runs entirely on CPU with no model weights.
+Set `bioemu.mock=true` in your config or pass `--mock` on the CLI. Set `mutation.strategy=random` to skip Dyna-1 loading. The full GA loop runs entirely on CPU with no model weights.
 
 ---
 
@@ -578,7 +578,7 @@ scoring:
   # Weights must sum to 1.0
 
 mutation:
-  strategy: "esm_guided"   # "random" or "esm_guided"
+  strategy: "dyna1_guided"   # "random" or "dyna1_guided"
   max_mutations_per_sequence: 3
   allowed_positions: null   # null = all positions
 
@@ -760,6 +760,6 @@ Test coverage:
 | BioEmu is a black box | `BaseStructuralBackend` abstracts all inference. Scoring never calls BioEmu directly. |
 | Scoring is pluggable | `ComponentScorer` ABC + `ScoringFunction.register()` — add axes without modifying core code. |
 | Config-driven | Every tunable value lives in `OptimizationConfig`. No hard-coded constants in logic files. |
-| Lazy model loading | ESM-2 and BioEmu load on first use. Importing the package has zero GPU cost. |
+| Lazy model loading | Dyna-1 and BioEmu load on first use. Importing the package has zero GPU cost. |
 | Modular imports | Each module can be imported independently. No circular dependencies. |
 | Mock-first testability | Full pipeline is testable on CPU with no model weights via `MockBioEmuBackend`. |

@@ -9,7 +9,7 @@ from protein_optimizer.mutation import (
     RandomMutator,
     build_mutator,
 )
-from protein_optimizer.esm import AMINO_ACIDS
+from protein_optimizer.dyna1 import AMINO_ACIDS
 
 SEQ = "MKTLLILAVLCLGFAQAS"
 
@@ -110,15 +110,15 @@ class TestCrossoverOperator:
 class TestBuildMutator:
     def test_random_strategy(self, rng):
         cfg = MutationConfig(strategy="random")
-        mutator = build_mutator(cfg, rng, esm_proposer=None)
+        mutator = build_mutator(cfg, rng, dyna1_proposer=None)
         assert isinstance(mutator, RandomMutator)
 
-    def test_esm_strategy_without_proposer_raises(self, rng):
-        cfg = MutationConfig(strategy="esm_guided")
-        with pytest.raises(ValueError, match="ESM-2 guided mutation requires"):
-            build_mutator(cfg, rng, esm_proposer=None)
+    def test_dyna1_strategy_without_proposer_raises(self, rng):
+        cfg = MutationConfig(strategy="dyna1_guided")
+        with pytest.raises(ValueError, match="Dyna-1 guided mutation requires"):
+            build_mutator(cfg, rng, dyna1_proposer=None)
 
     def test_unknown_strategy_raises(self, rng):
         cfg = MutationConfig(strategy="unknown_xyz")
         with pytest.raises(ValueError, match="Unknown mutation strategy"):
-            build_mutator(cfg, rng, esm_proposer=None)
+            build_mutator(cfg, rng, dyna1_proposer=None)

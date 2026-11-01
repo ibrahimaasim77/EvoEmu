@@ -13,7 +13,7 @@ Public API surface::
 
 from .config import (
     BioEmuConfig,
-    ESM2Config,
+    Dyna1Config,
     GAConfig,
     LoggingConfig,
     MutationConfig,
@@ -31,7 +31,7 @@ __all__ = [
     "ScoringConfig",
     "MutationConfig",
     "BioEmuConfig",
-    "ESM2Config",
+    "Dyna1Config",
     "LoggingConfig",
     "ScoringFunction",
     "ConformationalLandscapeScorer",
