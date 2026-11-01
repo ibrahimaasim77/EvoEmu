@@ -53,8 +53,11 @@ rm -f .dyna1-requirements.txt
 # Dyna-1's requirements pull numpy<2, but BioEmu's jax needs numpy>=2 — restore it.
 pip install -U "numpy>=2"
 # Dyna-1's vendored esm needs biotite==0.41.2, whose prebuilt wheel is compiled against
-# numpy 1.x and fails to import under numpy 2. Rebuild it from source against numpy 2.
-pip install --no-binary biotite --no-deps --force-reinstall "biotite==0.41.2"
+# numpy 1.x and fails to import under numpy 2. Rebuild it from source against the venv's
+# numpy 2 (build isolation would pull numpy<2 headers and reproduce the same problem).
+pip install cython setuptools wheel
+pip install --no-build-isolation --no-binary biotite --no-deps --force-reinstall "biotite==0.41.2"
+python -c "import biotite.structure" && echo "biotite imports OK under numpy $(python -c 'import numpy; print(numpy.__version__)')"
 # Weights via the Python API (the CLI was renamed between huggingface_hub versions).
 pip install -U huggingface_hub
 python - <<'PY'
