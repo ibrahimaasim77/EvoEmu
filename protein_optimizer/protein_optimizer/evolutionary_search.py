@@ -37,6 +37,7 @@ from .bioemu import BaseStructuralBackend, BioEmuOutput, build_bioemu_backend, w
 from .config import OptimizationConfig
 from .esm import ESM2MutationProposer
 from .mutation import CommonAncestorCrossover, ESMGuidedMutator, RandomMutator, MutationConfig
+from .thermompnn import StabilityFilter, build_stability_filter
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +59,8 @@ class EvolutionarySearchResult:
     all_scores: Dict[str, float]             # {sequence: llr} for every scored mutant
     top20_per_round: List[List[str]]         # the elite-20 snapshot after each round
     total_wall_time_s: float
+    # Candidates the ThermoMPNN guard rejected before BioEmu scoring
+    total_rejected: int = 0
     # Goal LLR when running in fit-to-target mode; None = maximise mode
     target_parameter: Optional[float] = None
     # BioEmuOutput objects kept for trajectory file export after the search
@@ -124,6 +127,13 @@ class BudgetedEvolutionarySearch:
         self._esm: Optional[ESM2MutationProposer] = (
             ESM2MutationProposer(config.esm2) if self._use_esm else None
         )
+
+        # Stability guard (None unless thermompnn.enabled): blocks candidates
+        # ThermoMPNN predicts won't fold, before any BioEmu time is spent.
+        self._stability_filter: Optional[StabilityFilter] = build_stability_filter(
+            config.thermompnn, config.original_sequence, config.logging.output_dir
+        )
+        self._total_rejected = 0
 
         self._batch_size = config.ga.population_size   # 100
         self._n_elite = config.ga.elite_size           # 20
@@ -243,6 +253,19 @@ class BudgetedEvolutionarySearch:
                 candidates = self._crossover.generate_offspring(current_parents, remaining)
 
             new_candidates = [s for s in candidates if s not in all_scores and s != original]
+            if self._stability_filter is not None and new_candidates:
+                new_candidates, rejected = self._stability_filter.filter(new_candidates)
+                self._total_rejected += len(rejected)
+                logger.info(
+                    "Round %d — ThermoMPNN guard rejected %d, kept %d",
+                    round_idx + 1, len(rejected), len(new_candidates),
+                )
+                emit({
+                    "type": "stability_filtered",
+                    "round": round_idx + 1,
+                    "rejected": len(rejected),
+                    "kept": len(new_candidates),
+                })
             if not new_candidates:
                 logger.warning("Round %d produced no new unique candidates — stopping.", round_idx + 1)
                 if self._verbose:
@@ -317,6 +340,12 @@ class BudgetedEvolutionarySearch:
             current_parents = top20
 
         elapsed = time.time() - start
+        if not all_scores:
+            raise RuntimeError(
+                "No candidates were scored"
+                + (f" ({self._total_rejected} rejected by the ThermoMPNN guard; "
+                   "raise thermompnn.ddg_cutoff)" if self._total_rejected else "")
+            )
         best_seq, best_llr = max(all_scores.items(), key=lambda x: self._fitness(x[1]))
         improved = self._fitness(best_llr) > self._fitness(reference_llr)
 
@@ -337,6 +366,7 @@ class BudgetedEvolutionarySearch:
             all_scores=all_scores,
             top20_per_round=top20_per_round,
             total_wall_time_s=elapsed,
+            total_rejected=self._total_rejected,
             target_parameter=self._target,
             reference_output=ref_output,
             best_output=best_output,
