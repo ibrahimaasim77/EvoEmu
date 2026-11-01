@@ -44,6 +44,14 @@ def main() -> None:
     ap.add_argument("--half", action="store_true", help="bf16 autocast on CUDA")
     args = ap.parse_args()
 
+    # Runpod images export HF_HUB_ENABLE_HF_TRANSFER=1, which makes huggingface_hub raise if the
+    # optional hf_transfer package is missing from this env. Fall back to normal downloads.
+    if os.environ.get("HF_HUB_ENABLE_HF_TRANSFER") == "1":
+        try:
+            import hf_transfer  # noqa: F401
+        except ImportError:
+            os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "0"
+
     repo = os.path.abspath(args.repo)
     os.chdir(repo)
     sys.path.insert(0, repo)
