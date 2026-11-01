@@ -124,8 +124,12 @@ class Dyna1MutationProposer:
             else repo / "model" / "weights" / "dyna1.pt"
         )
         if not weights.exists():
+            found = sorted(
+                str(f.relative_to(repo)) for f in (repo / "model").rglob("*") if f.is_file()
+            )[:30]
             raise FileNotFoundError(
-                f"Dyna-1 weights not found at {weights}. See the module docstring."
+                f"Dyna-1 weights not found at {weights}. See the module docstring. "
+                f"Files under {repo / 'model'}: {found}"
             )
 
         if str(repo) not in sys.path:
