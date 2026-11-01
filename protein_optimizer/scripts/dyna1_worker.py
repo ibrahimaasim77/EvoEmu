@@ -60,7 +60,21 @@ def main() -> None:
     from model.model import ESM_model
     import utils as dyna1_utils
 
-    device = torch.device(args.device if torch.cuda.is_available() else "cpu")
+    if args.device.startswith("cuda") and not torch.cuda.is_available():
+        # Fail loudly rather than silently running ~100x slower on CPU. Pass --device cpu
+        # (dyna1.device=cpu) if CPU is really what you want.
+        try:
+            torch.cuda.init()
+            reason = "torch.cuda.init() succeeded but is_available() is False"
+        except Exception as exc:
+            reason = f"torch.cuda.init() failed: {exc}"
+        raise RuntimeError(
+            f"CUDA requested but unavailable ({reason}). torch={torch.__version__} "
+            f"built-for-cuda={torch.version.cuda} "
+            f"CUDA_VISIBLE_DEVICES={os.environ.get('CUDA_VISIBLE_DEVICES')!r} "
+            f"NVIDIA_VISIBLE_DEVICES={os.environ.get('NVIDIA_VISIBLE_DEVICES')!r}"
+        )
+    device = torch.device(args.device)
     # Upstream pins the ESM-3 backbone to cuda-if-available but leaves the classifier
     # head on CPU, so move the whole model explicitly.
     model = ESM_model(method="esm3")
