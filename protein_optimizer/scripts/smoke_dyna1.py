@@ -6,6 +6,9 @@
 import logging
 import sys
 import time
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))   # repo root
 
 from protein_optimizer.config import Dyna1Config
 from protein_optimizer.dyna1 import Dyna1MutationProposer

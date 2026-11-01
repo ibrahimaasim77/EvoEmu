@@ -50,8 +50,14 @@ grep -viE '^\s*(torch|torchaudio|torchvision|torchtext|transformers)\b' Dyna-1/r
     > .dyna1-requirements.txt
 pip install -r .dyna1-requirements.txt
 rm -f .dyna1-requirements.txt
-pip install -U "huggingface_hub[cli]"
-huggingface-cli download gelnesr/Dyna-1 --include "weights/*" --local-dir Dyna-1/model/
+# Dyna-1's requirements pull numpy<2, but BioEmu's jax needs numpy>=2 — restore it.
+pip install -U "numpy>=2"
+# Weights via the Python API (the CLI was renamed between huggingface_hub versions).
+pip install -U huggingface_hub
+python - <<'PY'
+from huggingface_hub import snapshot_download
+snapshot_download("gelnesr/Dyna-1", allow_patterns=["weights/*"], local_dir="Dyna-1/model")
+PY
 # NOTE: Dyna-1 downloads the open ESM-3 base model (esm3_sm_open_v1) from
 # HuggingFace on first load. If that repo is gated for you, accept its license
 # on huggingface.co and run `huggingface-cli login` first.
