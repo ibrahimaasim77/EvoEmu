@@ -20,7 +20,7 @@ exchange (``p_exchange``). It has no amino-acid vocabulary head, so it cannot
 Setup (real mode):
   git clone https://github.com/WaymentSteeleLab/Dyna-1  <dyna1.repo_path>
   pip install -r <repo>/requirements.txt
-  huggingface-cli download gelnesr/Dyna-1 --include "weights/*" --local-dir <repo>/model/
+  python -c "from huggingface_hub import snapshot_download as d; d('gelnesr/Dyna-1', allow_patterns=['dyna1.pt'], local_dir='<repo>/model/weights')"
 
 Nothing here touches ESM-2: tokenisation uses ESM-3's sequence vocabulary directly.
 """

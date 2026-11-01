@@ -56,7 +56,8 @@ pip install -U "numpy>=2"
 pip install -U huggingface_hub
 python - <<'PY'
 from huggingface_hub import snapshot_download
-snapshot_download("gelnesr/Dyna-1", allow_patterns=["weights/*"], local_dir="Dyna-1/model")
+# The HF repo keeps dyna1.pt at its root (the upstream README says weights/ — outdated).
+snapshot_download("gelnesr/Dyna-1", allow_patterns=["dyna1.pt"], local_dir="Dyna-1/model/weights")
 PY
 # NOTE: Dyna-1 downloads the open ESM-3 base model (esm3_sm_open_v1) from
 # HuggingFace on first load. If that repo is gated for you, accept its license
