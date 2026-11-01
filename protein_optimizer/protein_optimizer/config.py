@@ -24,6 +24,8 @@ class Dyna1Config:
 
     repo_path: str = "Dyna-1"                # clone of WaymentSteeleLab/Dyna-1
     weights_path: Optional[str] = None       # None = <repo_path>/model/weights/dyna1.pt
+    python_path: Optional[str] = None        # None = <repo_path>/.venv/bin/python (Dyna-1's own env)
+    worker_script: Optional[str] = None      # None = scripts/dyna1_worker.py
     device: str = "cuda"
     batch_size: int = 16                     # mutants scored per forward pass
     top_k_candidates: int = 5

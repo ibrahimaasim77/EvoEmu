@@ -22,6 +22,7 @@ Verbose round-by-round scoring:
 from __future__ import annotations
 
 import argparse
+import json
 import logging
 import os
 import sys
@@ -117,6 +118,10 @@ def apply_overrides(cfg: OptimizationConfig, overrides: list[str]) -> None:
         parts = key_path.strip().split(".")
         if raw_value.lower() in ("true", "false"):
             value: object = raw_value.lower() == "true"
+        elif raw_value.lower() in ("none", "null"):
+            value = None
+        elif raw_value.startswith("["):
+            value = json.loads(raw_value)          # e.g. --set dyna1.target_positions=[10,11,12]
         else:
             try:
                 value = int(raw_value)

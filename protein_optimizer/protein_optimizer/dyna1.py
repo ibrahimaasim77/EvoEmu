@@ -17,19 +17,21 @@ exchange (``p_exchange``). It has no amino-acid vocabulary head, so it cannot
      signed delta, z-scored across the 19 substitutions and divided by ``temperature`` (so the mutator's softmax sampling
      prefers, but does not deterministically pick, the best substitution).
 
-Setup (real mode):
-  git clone https://github.com/WaymentSteeleLab/Dyna-1  <dyna1.repo_path>
-  pip install -r <repo>/requirements.txt
-  python -c "from huggingface_hub import snapshot_download as d; d('gelnesr/Dyna-1', allow_patterns=['dyna1.pt'], local_dir='<repo>/model/weights')"
+Setup (real mode): `bash setup_vm.sh` clones Dyna-1 to ./Dyna-1, builds its own virtualenv
+(Dyna-1/.venv — its numpy<2 stack conflicts with BioEmu's), and downloads the weights.
+Inference runs in a long-lived worker process (scripts/dyna1_worker.py) inside that
+virtualenv; this module only speaks JSON lines to it, so it needs no torch.
 
-Nothing here touches ESM-2: tokenisation uses ESM-3's sequence vocabulary directly.
+Nothing here touches ESM-2: the worker tokenises with ESM-3's own sequence vocabulary.
 """
 
 from __future__ import annotations
 
+import atexit
 import hashlib
+import json
 import logging
-import sys
+import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -42,15 +44,6 @@ logger = logging.getLogger(__name__)
 
 # Canonical single-letter amino acid alphabet (20 standard residues)
 AMINO_ACIDS: List[str] = list("ACDEFGHIKLMNPQRSTVWY")
-
-# ESM-3 sequence-track vocabulary (ids 0..32). Only the residue letters matter here.
-_ESM3_SEQ_VOCAB: List[str] = [
-    "<cls>", "<pad>", "<eos>", "<unk>",
-    "L", "A", "G", "V", "S", "E", "R", "T", "I", "D", "P", "K", "Q", "N", "F", "Y",
-    "M", "H", "W", "C", "X", "B", "U", "Z", "O", ".", "-", "<null_1>", "<mask>",
-]
-_TOKEN_ID: Dict[str, int] = {tok: i for i, tok in enumerate(_ESM3_SEQ_VOCAB)}
-
 
 # ---------------------------------------------------------------------------
 # Data structures
@@ -92,9 +85,7 @@ class Dyna1MutationProposer:
 
     def __init__(self, config: Dyna1Config) -> None:
         self.config = config
-        self._model = None
-        self._torch = None
-        self._device = None
+        self._proc: Optional[subprocess.Popen] = None
         self._loaded = False
         self._cache: Dict[str, float] = {}   # sequence → scalar dynamics score
 
@@ -106,21 +97,17 @@ class Dyna1MutationProposer:
         if self._loaded or self.config.mock:
             return
 
-        try:
-            import torch
-        except ImportError as exc:
-            raise ImportError("torch is required for Dyna-1. pip install torch") from exc
-
-        repo = Path(self.config.repo_path).expanduser().resolve()
+        cfg = self.config
+        repo = Path(cfg.repo_path).expanduser().resolve()
         if not (repo / "model" / "model.py").exists():
             raise FileNotFoundError(
-                f"Dyna-1 repo not found at {repo}. Clone "
-                "https://github.com/WaymentSteeleLab/Dyna-1 there, or set "
+                f"Dyna-1 repo not found at {repo}. Run setup_vm.sh, or clone "
+                "https://github.com/WaymentSteeleLab/Dyna-1 there and set "
                 "dyna1.repo_path (or dyna1.mock=true)."
             )
         weights = (
-            Path(self.config.weights_path).expanduser()
-            if self.config.weights_path
+            Path(cfg.weights_path).expanduser()
+            if cfg.weights_path
             else repo / "model" / "weights" / "dyna1.pt"
         )
         if not weights.exists():
@@ -128,29 +115,56 @@ class Dyna1MutationProposer:
                 str(f.relative_to(repo)) for f in (repo / "model").rglob("*") if f.is_file()
             )[:30]
             raise FileNotFoundError(
-                f"Dyna-1 weights not found at {weights}. See the module docstring. "
-                f"Files under {repo / 'model'}: {found}"
+                f"Dyna-1 weights not found at {weights}. Files under {repo / 'model'}: {found}"
             )
+        python = Path(cfg.python_path).expanduser() if cfg.python_path else repo / ".venv" / "bin" / "python"
+        if not python.exists():
+            raise FileNotFoundError(
+                f"Dyna-1 virtualenv python not found at {python}. Run setup_vm.sh "
+                "(it builds Dyna-1/.venv) or set dyna1.python_path."
+            )
+        worker = (
+            Path(cfg.worker_script)
+            if cfg.worker_script
+            else Path(__file__).resolve().parents[1] / "scripts" / "dyna1_worker.py"
+        )
 
-        if str(repo) not in sys.path:
-            sys.path.insert(0, str(repo))
-        from model.model import ESM_model  # type: ignore  # Dyna-1 repo
-        import utils as dyna1_utils        # type: ignore  # Dyna-1 repo
-
-        logger.info("Loading Dyna-1 (ESM-3, sequence-only) from %s", repo)
-        # Upstream pins the ESM-3 backbone to cuda-if-available at construction but
-        # leaves the classifier head on CPU, so move the whole model explicitly.
-        device = torch.device(self.config.device if torch.cuda.is_available() else "cpu")
-        model = ESM_model(method="esm3")
-        state = torch.load(weights, map_location="cpu")
-        model.load_state_dict(state, strict=False)
-        model = model.to(device).eval()
-        self._device = device
-        self._model = model
-        self._prob_adjusted = dyna1_utils.prob_adjusted
-        self._torch = torch
-        logger.info("Dyna-1 ready on device: %s", self._device)
+        cmd = [str(python), str(worker), "--repo", str(repo), "--weights", str(weights),
+               "--device", cfg.device]
+        if cfg.half_precision:
+            cmd.append("--half")
+        logger.info("Starting Dyna-1 worker: %s", " ".join(cmd))
+        # stderr is inherited so model-load logs and tracebacks show up in our output.
+        self._proc = subprocess.Popen(
+            cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True, bufsize=1
+        )
+        atexit.register(self.close)
+        ready = self._read_message()
+        if not ready.get("ready"):
+            raise RuntimeError(f"Dyna-1 worker failed to start: {ready}")
+        logger.info("Dyna-1 ready on device: %s", ready.get("device"))
         self._loaded = True
+
+    def _read_message(self) -> dict:
+        assert self._proc is not None and self._proc.stdout is not None
+        line = self._proc.stdout.readline()
+        if not line:
+            code = self._proc.poll()
+            raise RuntimeError(
+                f"Dyna-1 worker exited unexpectedly (code {code}); see its traceback above."
+            )
+        return json.loads(line)
+
+    def close(self) -> None:
+        """Shut the worker down (also registered with atexit)."""
+        if self._proc is not None and self._proc.poll() is None:
+            self._proc.terminate()
+            try:
+                self._proc.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                self._proc.kill()
+        self._proc = None
+        self._loaded = False
 
     # ------------------------------------------------------------------
     # Scoring
@@ -171,22 +185,16 @@ class Dyna1MutationProposer:
         return np.random.default_rng(seed).uniform(0.0, 1.0, len(seq))
 
     def _real_profiles(self, seqs: List[str]) -> List[np.ndarray]:
-        torch = self._torch
+        assert self._proc is not None and self._proc.stdin is not None
         out: List[np.ndarray] = []
         for start in range(0, len(seqs), self.config.batch_size):
             chunk = seqs[start : start + self.config.batch_size]
-            tokens = torch.tensor(
-                [[_TOKEN_ID[a] for a in s] for s in chunk], device=self._device
-            )
-            sequence_id = torch.ones_like(tokens, dtype=torch.bool)
-            with torch.no_grad(), torch.autocast(
-                device_type=self._device.type,
-                dtype=torch.bfloat16,
-                enabled=self.config.half_precision and self._device.type == "cuda",
-            ):
-                logits = self._model((tokens, None), sequence_id)
-            p = self._prob_adjusted(logits.float()).detach().cpu().numpy()
-            out.extend(p.reshape(len(chunk), -1))   # .squeeze() upstream drops dims
+            self._proc.stdin.write(json.dumps({"seqs": chunk}) + "\n")
+            self._proc.stdin.flush()
+            reply = self._read_message()
+            if "error" in reply:
+                raise RuntimeError(f"Dyna-1 worker error: {reply['error']}")
+            out.extend(np.asarray(p, dtype=float) for p in reply["profiles"])
         return out
 
     def score_sequences(self, seqs: List[str]) -> List[float]:

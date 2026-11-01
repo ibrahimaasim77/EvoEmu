@@ -39,37 +39,38 @@ pip install "bioemu[cuda]"
 # Project dependencies.
 pip install torch transformers numpy pyyaml biopython
 
-echo "=== 5/6  Installing Dyna-1 (mutation oracle) ==="
-# Clone into ./Dyna-1 (the default dyna1.repo_path).
+echo "=== 5/6  Installing Dyna-1 (mutation oracle, in its OWN virtualenv) ==="
+# Dyna-1 pins numpy<2 / biotite==0.41.2 / transformers<4.47, which conflict with BioEmu's
+# numpy>=2 / jax stack. So it gets Dyna-1/.venv and runs as a worker process
+# (scripts/dyna1_worker.py); the two never share an interpreter.
 if [ ! -d Dyna-1 ]; then
     git clone --depth 1 https://github.com/WaymentSteeleLab/Dyna-1 Dyna-1
 fi
-# Install its requirements WITHOUT its torch/transformers pins, which would
-# clobber the versions BioEmu installed above.
-grep -viE '^\s*(torch|torchaudio|torchvision|torchtext|transformers)\b' Dyna-1/requirements.txt \
+# Reuse the base interpreter's torch if it has one (runpod/pytorch images do) — saves ~5 GB.
+BASE_PY="$(python -c 'import sys; print(sys.base_prefix)')/bin/python3"
+SITE_FLAG=""
+if "$BASE_PY" -c "import torch" 2>/dev/null; then SITE_FLAG="--system-site-packages"; fi
+if [ ! -x Dyna-1/.venv/bin/python ]; then
+    "$BASE_PY" -m venv $SITE_FLAG Dyna-1/.venv
+fi
+D1_PIP="Dyna-1/.venv/bin/pip"
+$D1_PIP install --upgrade pip wheel
+# Skip the torch family pins (they would replace the CUDA torch we already have).
+grep -viE '^\s*(torch|torchaudio|torchvision|torchtext)\b' Dyna-1/requirements.txt \
     > .dyna1-requirements.txt
-pip install -r .dyna1-requirements.txt
+$D1_PIP install -r .dyna1-requirements.txt
 rm -f .dyna1-requirements.txt
-# Dyna-1's requirements pull numpy<2, but BioEmu's jax needs numpy>=2 — restore it.
-pip install -U "numpy>=2"
-# Dyna-1's vendored esm needs biotite==0.41.2, whose prebuilt wheel is compiled against
-# numpy 1.x and fails to import under numpy 2. Rebuild it from source against the venv's
-# numpy 2 (build isolation would pull numpy<2 headers and reproduce the same problem).
-pip install cython setuptools wheel
-# --no-cache-dir: pip would otherwise reuse a previously cached numpy-1 build of the wheel.
-pip install --no-cache-dir --no-build-isolation --no-binary biotite --no-deps --force-reinstall "biotite==0.41.2"
-python -c "import biotite.structure"   # set -e: abort setup loudly if this still fails
-echo "biotite imports OK under numpy $(python -c 'import numpy; print(numpy.__version__)')"
-# Weights via the Python API (the CLI was renamed between huggingface_hub versions).
-pip install -U huggingface_hub
-python - <<'PY'
+if ! Dyna-1/.venv/bin/python -c "import torch" 2>/dev/null; then $D1_PIP install torch; fi
+# Weights live at the HuggingFace repo root (the upstream README's weights/ path is outdated).
+Dyna-1/.venv/bin/python - <<'PY'
 from huggingface_hub import snapshot_download
-# The HF repo keeps dyna1.pt at its root (the upstream README says weights/ — outdated).
 snapshot_download("gelnesr/Dyna-1", allow_patterns=["dyna1.pt"], local_dir="Dyna-1/model/weights")
 PY
-# NOTE: Dyna-1 downloads the open ESM-3 base model (esm3_sm_open_v1) from
-# HuggingFace on first load. If that repo is gated for you, accept its license
-# on huggingface.co and run `huggingface-cli login` first.
+# Fail setup loudly if the model code can't be imported in its own env.
+(cd Dyna-1 && .venv/bin/python -c "from model.model import ESM_model; print('Dyna-1 imports OK')")
+# NOTE: on first load Dyna-1 downloads the open ESM-3 base model (esm3_sm_open_v1) from
+# HuggingFace. If that repo is gated for you, accept its license on huggingface.co and run
+# `huggingface-cli login` (or set HF_TOKEN) first.
 
 echo "=== 6/6  Mock smoke test (no GPU work, verifies wiring) ==="
 python main.py --config config/evolutionary.yaml --mock \

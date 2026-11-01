@@ -55,3 +55,59 @@ def test_all_positions_scored_in_one_call_and_cached():
     assert len(calls) == len(set(calls)) == 1 + 3 * 19      # parent + 19 mutants/position
     proposer.propose(SEQ, [2, 9, 15])
     assert len(calls) == 1 + 3 * 19                         # second pass fully cached
+
+
+# --- real (non-mock) path, exercised against a stub worker speaking the same protocol ---
+
+STUB = str(__import__("pathlib").Path(__file__).parent / "stub_dyna1_worker.py")
+
+
+def _fake_repo(tmp_path):
+    (tmp_path / "model" / "weights").mkdir(parents=True)
+    (tmp_path / "model" / "model.py").write_text("")
+    (tmp_path / "model" / "weights" / "dyna1.pt").write_text("")
+    return tmp_path
+
+
+def _worker_proposer(tmp_path, **kw):
+    import sys
+
+    cfg = Dyna1Config(
+        repo_path=str(_fake_repo(tmp_path)),
+        python_path=sys.executable,
+        worker_script=STUB,
+        batch_size=7,
+        **kw,
+    )
+    return Dyna1MutationProposer(cfg)
+
+
+def test_worker_protocol_end_to_end(tmp_path):
+    proposer = _worker_proposer(tmp_path)
+    try:
+        out = proposer.propose(SEQ, [3, 11])
+        assert set(out) == {3, 11}
+        assert all(len(c) == 5 for c in out.values())
+        # batch_size=7 forces several round-trips (39 sequences) — all must come back aligned
+        assert len(proposer._cache) == 1 + 2 * 19
+    finally:
+        proposer.close()
+
+
+def test_worker_error_is_raised_not_swallowed(tmp_path):
+    import pytest
+
+    proposer = _worker_proposer(tmp_path)
+    try:
+        with pytest.raises(RuntimeError, match="bad residue"):
+            proposer.score_sequences(["MKZ"])
+    finally:
+        proposer.close()
+
+
+def test_missing_worker_env_gives_actionable_error(tmp_path):
+    import pytest
+
+    cfg = Dyna1Config(repo_path=str(_fake_repo(tmp_path)))   # no Dyna-1/.venv in the fake repo
+    with pytest.raises(FileNotFoundError, match="setup_vm.sh"):
+        Dyna1MutationProposer(cfg).propose(SEQ, [1])
