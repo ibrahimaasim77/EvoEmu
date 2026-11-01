@@ -56,8 +56,10 @@ pip install -U "numpy>=2"
 # numpy 1.x and fails to import under numpy 2. Rebuild it from source against the venv's
 # numpy 2 (build isolation would pull numpy<2 headers and reproduce the same problem).
 pip install cython setuptools wheel
-pip install --no-build-isolation --no-binary biotite --no-deps --force-reinstall "biotite==0.41.2"
-python -c "import biotite.structure" && echo "biotite imports OK under numpy $(python -c 'import numpy; print(numpy.__version__)')"
+# --no-cache-dir: pip would otherwise reuse a previously cached numpy-1 build of the wheel.
+pip install --no-cache-dir --no-build-isolation --no-binary biotite --no-deps --force-reinstall "biotite==0.41.2"
+python -c "import biotite.structure"   # set -e: abort setup loudly if this still fails
+echo "biotite imports OK under numpy $(python -c 'import numpy; print(numpy.__version__)')"
 # Weights via the Python API (the CLI was renamed between huggingface_hub versions).
 pip install -U huggingface_hub
 python - <<'PY'
