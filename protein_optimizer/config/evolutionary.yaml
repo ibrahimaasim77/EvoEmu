@@ -32,6 +32,20 @@ bioemu:
   mock: false           # set to true for GPU-free testing
   trajectory_dir: "results/trajectories"   # where .pdb / .xtc files are saved
 
+# ThermoMPNN stability guard: drop candidates predicted not to fold before
+# BioEmu scoring. A mutation is blocked if ddG > ddg_cutoff on ANY pdb.
+thermompnn:
+  enabled: false
+  mock: false
+  pdb_paths: []                 # e.g. ["pose1.pdb", "pose2.pdb"]; must match original_sequence
+  chain: "A"
+  ddg_cutoff: 2.0               # kcal/mol (positive = destabilizing)
+  repo_dir: null                # path to a Kuhlman-Lab/ThermoMPNN checkout
+  model_path: null
+  python_executable: "python"
+  dyna1_scores_path: null       # optional CSV: residue_number,score (1-based)
+  dyna1_threshold: 0.5
+
 scoring:
   stability_weight: 0.40
   consistency_weight: 0.30

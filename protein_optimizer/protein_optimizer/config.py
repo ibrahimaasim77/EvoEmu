@@ -48,6 +48,30 @@ class BioEmuConfig:
 
 
 @dataclass
+class ThermoMPNNConfig:
+    """Stability guard: reject candidates ThermoMPNN predicts will not fold."""
+
+    enabled: bool = False
+    # Synthetic ΔΔG values (CI / no-GPU environments)
+    mock: bool = False
+    # One PDB per backbone/pose. A mutation is rejected if it exceeds the
+    # cutoff on ANY of them.
+    pdb_paths: List[str] = field(default_factory=list)
+    chain: str = "A"
+    # kcal/mol; positive = destabilizing. Mutations above this are blocked.
+    ddg_cutoff: float = 2.0
+    # Kuhlman-Lab/ThermoMPNN checkout (contains analysis/custom_inference.py)
+    repo_dir: Optional[str] = None
+    model_path: Optional[str] = None     # null = repo default checkpoint
+    python_executable: str = "python"    # interpreter with ThermoMPNN deps
+    # Optional Dyna-1 per-residue scores (CSV: residue_number,score; 1-based).
+    # Flagged positions are marked in the report; all positions are scored.
+    dyna1_scores_path: Optional[str] = None
+    dyna1_threshold: float = 0.5
+    report_path: Optional[str] = None    # default: <logging.output_dir>/thermompnn_report.csv
+
+
+@dataclass
 class ScoringConfig:
     """Weights for the composite fitness function."""
 
@@ -150,6 +174,7 @@ class OptimizationConfig:
 
     esm2: ESM2Config = field(default_factory=ESM2Config)
     bioemu: BioEmuConfig = field(default_factory=BioEmuConfig)
+    thermompnn: ThermoMPNNConfig = field(default_factory=ThermoMPNNConfig)
     scoring: ScoringConfig = field(default_factory=ScoringConfig)
     mutation: MutationConfig = field(default_factory=MutationConfig)
     ga: GAConfig = field(default_factory=GAConfig)
@@ -174,6 +199,7 @@ class OptimizationConfig:
         sub_map = {
             "esm2": ESM2Config,
             "bioemu": BioEmuConfig,
+            "thermompnn": ThermoMPNNConfig,
             "scoring": ScoringConfig,
             "mutation": MutationConfig,
             "ga": GAConfig,
