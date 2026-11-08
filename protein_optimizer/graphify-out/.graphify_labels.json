@@ -24,10 +24,13 @@
   "22": "ComponentScorer",
   "23": "._aggregate",
   "24": "._from_dict",
-  "25": ".__init__",
-  "26": ".crossover",
+  "25": "CrossoverOperator",
+  "26": "test_dyna1.py",
   "27": "practice.sh",
   "28": "setup_vm.sh",
   "29": "protein-optimizer",
-  "30": "__init__.py"
+  "30": "Dyna1GuidedMutator",
+  "31": "test_ga.py",
+  "32": "dyna1_worker.py",
+  "33": "stub_dyna1_worker.py"
 }

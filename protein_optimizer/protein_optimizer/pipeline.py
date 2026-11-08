@@ -32,7 +32,7 @@ from typing import List, Optional
 from .analysis import OptimizationTracker, StageReporter
 from .bioemu import BaseStructuralBackend, build_bioemu_backend
 from .config import OptimizationConfig
-from .esm import ESM2MutationProposer
+from .dyna1 import Dyna1MutationProposer
 from .genetic_algorithm import GeneticAlgorithm
 from .mutation import CrossoverOperator, build_mutator
 from .scoring import ScoringFunction, WildtypeProximityScorer
@@ -68,7 +68,7 @@ class ProteinOptimizationPipeline:
     Orchestrates the full protein sequence optimization run.
 
     Construction builds all sub-components lazily where possible:
-      - ESM-2 is not loaded until the first mutation call
+      - Dyna-1 is not loaded until the first mutation call
       - BioEmu is not loaded until the first fitness evaluation
       - Both respect GPU device settings from config
 
@@ -97,16 +97,16 @@ class ProteinOptimizationPipeline:
         # Scoring function
         self._scorer: ScoringFunction = scoring_fn or ScoringFunction(config.scoring)
 
-        # ESM-2 proposer (lazy — only built if strategy requires it)
-        self._esm_proposer: Optional[ESM2MutationProposer] = None
-        if config.mutation.strategy == "esm_guided":
-            self._esm_proposer = ESM2MutationProposer(config.esm2)
+        # Dyna-1 proposer (lazy — only built if strategy requires it)
+        self._dyna1_proposer: Optional[Dyna1MutationProposer] = None
+        if config.mutation.strategy == "dyna1_guided":
+            self._dyna1_proposer = Dyna1MutationProposer(config.dyna1)
 
         # Mutation operator
         self._mutator = build_mutator(
             config=config.mutation,
             rng=self._rng,
-            esm_proposer=self._esm_proposer,
+            dyna1_proposer=self._dyna1_proposer,
         )
 
         # Crossover operator

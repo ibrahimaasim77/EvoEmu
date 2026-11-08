@@ -22,7 +22,7 @@ DEFECTIVE="MKTLLGLAVLCLGFAQASGNPERPIDGFHGDLQSLDKAMFESRHITAYIEWLEELRQRQTAATGGKRQ"
 EXTRA=""
 if [ "${1:-}" = "mock" ]; then
     echo ">>> Running in MOCK mode (synthetic BioEmu, no GPU)"
-    EXTRA="--mock --random-mutations --set esm2.device=cpu"
+    EXTRA="--mock --set dyna1.device=cpu"
 else
     echo ">>> Running with REAL BioEmu (needs the GPU VM)"
 fi

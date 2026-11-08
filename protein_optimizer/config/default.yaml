@@ -7,13 +7,17 @@ original_sequence: "MKTLLILAVLCLGFAQASGNIERPIDGFHGDLQSLIKAMFESRHITAYIEQLEELRQRQT
 # Leave blank ("") to run purely structural optimization without a target.
 wildtype_sequence: ""
 
-esm2:
-  model_name: "facebook/esm2_t33_650M_UR50D"
-  device: "cuda"           # "cpu" if no GPU
-  batch_size: 8
+dyna1:
+  repo_path: "Dyna-1"      # git clone https://github.com/WaymentSteeleLab/Dyna-1
+  weights_path: null       # null = <repo_path>/model/weights/dyna1.pt
+  device: "cuda"
+  batch_size: 16           # mutants scored per forward pass
   top_k_candidates: 5
-  temperature: 1.0
-  cache_dir: null           # null = HuggingFace default (~/.cache/huggingface)
+  temperature: 1.0       # z-scored; lower = greedier
+  direction: "up"          # "up" = more µs–ms dynamics, "down" = more rigid
+  target_positions: null   # 0-based residue list to focus on; null = whole chain
+  half_precision: true     # bf16 autocast on CUDA
+  mock: false              # true = synthetic scores, no model/weights needed
 
 bioemu:
   model_path: null          # null = HuggingFace default
@@ -34,7 +38,7 @@ scoring:
   wildtype_proximity_weight: 0.30
 
 mutation:
-  strategy: "esm_guided"   # "random" or "esm_guided"
+  strategy: "dyna1_guided"   # "random" or "dyna1_guided"
   max_mutations_per_sequence: 3
   allowed_positions: null   # null = all positions; or [5, 10, 15, ...]
   mutation_rate: 0.1        # used only in random mode

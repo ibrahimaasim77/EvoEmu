@@ -19,15 +19,21 @@ from typing import Dict, List, Optional, Any
 
 
 @dataclass
-class ESM2Config:
-    """Controls ESM-2 mutation proposal behaviour."""
+class Dyna1Config:
+    """Controls Dyna-1 mutation proposal (saturation scan; see dyna1.py)."""
 
-    model_name: str = "facebook/esm2_t33_650M_UR50D"
+    repo_path: str = "Dyna-1"                # clone of WaymentSteeleLab/Dyna-1
+    weights_path: Optional[str] = None       # None = <repo_path>/model/weights/dyna1.pt
+    python_path: Optional[str] = None        # None = <repo_path>/.venv/bin/python (Dyna-1's own env)
+    worker_script: Optional[str] = None      # None = scripts/dyna1_worker.py
     device: str = "cuda"
-    batch_size: int = 8
+    batch_size: int = 16                     # mutants scored per forward pass
     top_k_candidates: int = 5
-    temperature: float = 1.0
-    cache_dir: Optional[str] = None
+    temperature: float = 1.0                 # softmax sharpness over z-scored Δp_exchange (lower = greedier)
+    direction: str = "up"                    # "up" = more µs–ms dynamics, "down" = more rigid
+    target_positions: Optional[List[int]] = None   # 0-based; None = whole chain
+    half_precision: bool = True              # bf16 autocast on CUDA (faster, ~half the memory)
+    mock: bool = False                       # synthetic scores, no model/weights needed
 
 
 @dataclass
@@ -103,7 +109,7 @@ class ScoringConfig:
 class MutationConfig:
     """Controls how sequences are mutated during evolution."""
 
-    strategy: str = "esm_guided"          # "random" | "esm_guided"
+    strategy: str = "dyna1_guided"        # "random" | "dyna1_guided"
     max_mutations_per_sequence: int = 3
     allowed_positions: Optional[List[int]] = None   # None = all positions
     mutation_rate: float = 0.1             # per-residue probability (random mode)
@@ -172,7 +178,7 @@ class OptimizationConfig:
     target_parameter: Optional[float] = None
     healthy_sequence: str = ""
 
-    esm2: ESM2Config = field(default_factory=ESM2Config)
+    dyna1: Dyna1Config = field(default_factory=Dyna1Config)
     bioemu: BioEmuConfig = field(default_factory=BioEmuConfig)
     thermompnn: ThermoMPNNConfig = field(default_factory=ThermoMPNNConfig)
     scoring: ScoringConfig = field(default_factory=ScoringConfig)
@@ -197,7 +203,7 @@ class OptimizationConfig:
             "target_parameter", "healthy_sequence",
         }
         sub_map = {
-            "esm2": ESM2Config,
+            "dyna1": Dyna1Config,
             "bioemu": BioEmuConfig,
             "thermompnn": ThermoMPNNConfig,
             "scoring": ScoringConfig,

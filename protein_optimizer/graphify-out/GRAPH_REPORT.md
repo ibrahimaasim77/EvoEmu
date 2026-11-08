@@ -1,16 +1,16 @@
-# Graph Report - protein_optimizer  (2026-07-23)
+# Graph Report - protein_optimizer  (2026-11-01)
 
 ## Corpus Check
-- 28 files · ~37,815 words
+- 31 files · ~39,557 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 567 nodes · 1328 edges · 31 communities (23 shown, 8 thin omitted)
-- Extraction: 83% EXTRACTED · 17% INFERRED · 0% AMBIGUOUS · INFERRED: 232 edges (avg confidence: 0.5)
+- 597 nodes · 1274 edges · 34 communities (21 shown, 13 thin omitted)
+- Extraction: 81% EXTRACTED · 19% INFERRED · 0% AMBIGUOUS · INFERRED: 236 edges (avg confidence: 0.51)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `67a7139e`
+- Built from commit: `32883666`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -39,24 +39,27 @@
 - [[_COMMUNITY_RandomMutator|RandomMutator]]
 - [[_COMMUNITY_ComponentScorer|ComponentScorer]]
 - [[_COMMUNITY_._aggregate|._aggregate]]
-- [[_COMMUNITY_._from_dict|._from_dict]]
-- [[_COMMUNITY_.__init__|.__init__]]
-- [[_COMMUNITY_.crossover|.crossover]]
+- [[_COMMUNITY_CrossoverOperator|CrossoverOperator]]
+- [[_COMMUNITY_test_dyna1.py|test_dyna1.py]]
 - [[_COMMUNITY_practice.sh|practice.sh]]
 - [[_COMMUNITY_setup_vm.sh|setup_vm.sh]]
 - [[_COMMUNITY_protein-optimizer|protein-optimizer]]
+- [[_COMMUNITY_Dyna1GuidedMutator|Dyna1GuidedMutator]]
+- [[_COMMUNITY_test_ga.py|test_ga.py]]
+- [[_COMMUNITY_dyna1_worker.py|dyna1_worker.py]]
+- [[_COMMUNITY_stub_dyna1_worker.py|stub_dyna1_worker.py]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `BioEmuOutput` - 51 edges
-2. `ProteinOptimizationPipeline` - 45 edges
+1. `BioEmuOutput` - 46 edges
+2. `ProteinOptimizationPipeline` - 42 edges
 3. `MutationConfig` - 36 edges
-4. `CrossoverOperator` - 36 edges
-5. `OptimizationConfig` - 33 edges
-6. `GAConfig` - 32 edges
-7. `ScoringFunction` - 29 edges
-8. `GenerationResult` - 28 edges
-9. `StageReporter` - 27 edges
-10. `ScoringConfig` - 26 edges
+4. `Dyna1MutationProposer` - 36 edges
+5. `CrossoverOperator` - 35 edges
+6. `OptimizationConfig` - 30 edges
+7. `GAConfig` - 27 edges
+8. `ScoringFunction` - 27 edges
+9. `StageReporter` - 26 edges
+10. `GenerationResult` - 25 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `TestWildtypePipeline` --uses--> `StageReporter`  [INFERRED]
@@ -73,115 +76,107 @@
 ## Import Cycles
 - None detected.
 
-## Communities (31 total, 8 thin omitted)
+## Communities (34 total, 13 thin omitted)
 
 ### Community 0 - "server.py"
-Cohesion: 0.10
-Nodes (23): BaseModel, Connection, _connect(), create_run(), fail_run(), finalize_run(), get_run(), get_run_rounds() (+15 more)
+Cohesion: 0.07
+Nodes (20): BaseModel, BudgetedEvolutionarySearch, Higher = better in both modes. Maximise mode: the LLR itself.         Target mod, Execute the full search. Returns EvolutionarySearchResult., Extract a single LLR scalar from a BioEmuOutput.          Priority:           1., Generate `n` candidates via random amino acid substitutions (no model needed)., Generate `n` mutation candidates via Dyna-1.          For each slot, picks a ran, Maximise mode: best LLR beats the reference.         Target mode: best LLR is cl (+12 more)
 
 ### Community 1 - "Any"
-Cohesion: 0.06
-Nodes (31): GenerationSummary, MutationRecord, OptimizationTracker, Path, Logging and Analysis Module  Responsibilities:   - Attach to GA as a callback to, Collects GA progress data and exports to disk.      Attach to a GeneticAlgorithm, Called by GeneticAlgorithm after each generation is evaluated., Write final results to disk.          Returns:             dict mapping format n (+23 more)
+Cohesion: 0.14
+Nodes (15): Dyna1Config, Unified configuration for the protein optimization framework.  All modules are d, Controls Dyna-1 mutation proposal (saturation scan; see dyna1.py)., Dyna1MutationProposer, Dyna-1 Mutation Proposal Module  Uses Dyna-1 (WaymentSteeleLab/Dyna-1, ESM-3 var, Shut the worker down (also registered with atexit)., Suggests substitutions by saturation-scanning with Dyna-1.      Example::, Evolutionary Search Pipeline  Implements the team's target algorithm:    1. Scor (+7 more)
 
 ### Community 2 - "_connect"
-Cohesion: 0.07
-Nodes (20): FitnessCallable, ConvergenceTracker, GeneticAlgorithm, Random, Deterministic top-k selection. Useful for greedy benchmarking.     Repeats top s, Tracks whether the GA has stalled., Call once per generation.         Returns True if the GA has converged (stale_co, Evolutionary optimiser for sequences.      The GA has no knowledge of biology. I (+12 more)
+Cohesion: 0.06
+Nodes (30): FitnessCallable, GAConfig, Genetic algorithm hyper-parameters., ConvergenceTracker, GenerationResult, GeneticAlgorithm, Random, Deterministic top-k selection. Useful for greedy benchmarking.     Repeats top s (+22 more)
 
 ### Community 3 - "run_store.py"
 Cohesion: 0.05
 Nodes (37): 1. Set up the VM (one time), 2. Activate the environment (every new terminal), 3. Run it, 4. Practice sequences, 5. How long it takes, 6. Output — what you get and where, 7. Download files to your laptop, Add a custom scoring component (+29 more)
 
 ### Community 4 - "RunRequest"
-Cohesion: 0.08
-Nodes (21): apply_overrides(), format_mutations(), main(), parse_args(), Protein Optimization — Entry Point  Default usage (runs evolutionary search with, Return the point mutations of `variant` vs. `original` as e.g. 'L5I, Q34K'., Namespace, Write trajectory files for one BioEmuOutput.      Real BioEmu runs: writes BioEm (+13 more)
+Cohesion: 0.20
+Nodes (8): EvolutionarySearchResult, Final result returned by BudgetedEvolutionarySearch.run()., Higher = better in both modes. Maximise mode: the LLR itself.         Target mod, CommonAncestorCrossover, Crossover operator based on consensus positions across an elite pool.      Algor, Return {position: amino_acid} for every position where all sequences agree., Generate `n_offspring` sequences by fixing consensus positions and         recom, Number of positions that are NOT conserved across the sequences.
 
 ### Community 5 - "fold_sequence"
-Cohesion: 0.13
-Nodes (31): _add_title_overlay(), assign_to_states(), _axis_limits(), compute_ss_mdtraj(), coords_to_fingerprint(), frame_rmsd_to_ref(), load_ca_trajectory(), main() (+23 more)
+Cohesion: 0.11
+Nodes (29): _add_title_overlay(), assign_to_states(), _axis_limits(), compute_ss_mdtraj(), coords_to_fingerprint(), frame_rmsd_to_ref(), load_ca_trajectory(), main() (+21 more)
 
 ### Community 6 - "Queue"
-Cohesion: 0.15
-Nodes (15): BioEmuOutput, Aggregated structural output for one protein sequence.      `samples` holds the, CompactnessScorer, ConsistencyScorer, EnergyScorer, Energy-based stability proxy.      Assumes energy_proxy is negative (lower = mor, Radius of gyration stability proxy.      A compact, consistent fold (low Rg with, Structural stability score from per-residue confidence (pLDDT proxy).      pLDDT (+7 more)
+Cohesion: 0.06
+Nodes (25): LoggingConfig, Controls logging, checkpointing, and result export., GenerationSummary, MutationRecord, OptimizationTracker, Logging and Analysis Module  Responsibilities:   - Attach to GA as a callback to, Collects GA progress data and exports to disk.      Attach to a GeneticAlgorithm, Called by GeneticAlgorithm after each generation is evaluated. (+17 more)
 
 ### Community 7 - "saved_trajectory"
-Cohesion: 0.16
-Nodes (7): ProteinOptimizationPipeline, Execute the full optimization. Returns OptimizationResult.          Steps:, Full evaluation pipeline for one generation's population:           sequences →, Seed population:           - The original sequence is always included (index 0), Orchestrates the full protein sequence optimization run.      Construction build, TestPipelineMock, TestWildtypePipeline
+Cohesion: 0.06
+Nodes (31): apply_overrides(), format_mutations(), main(), parse_args(), Protein Optimization — Entry Point  Default usage (runs evolutionary search with, Return the point mutations of `variant` vs. `original` as e.g. 'L5I, Q34K'., Namespace, OptimizationConfig (+23 more)
+
+### Community 8 - "protein_optimizer (EvoEmu)"
+Cohesion: 0.14
+Nodes (21): assign_to_states(), _axis_limits(), coords_to_fingerprint(), load_ca_coords(), main(), Upper-triangle of the Cα pairwise distance matrix, flattened to 1-D.      This i, Greedy max-coverage prototype selection.      Picks the first prototype as index, Assign each sample to its nearest prototype and return the distances.      Retur (+13 more)
 
 ### Community 9 - "MutationConfig"
-Cohesion: 0.16
-Nodes (10): MutationConfig, Controls how sequences are mutated during evolution., build_mutator(), CrossoverOperator, Recombines two parent sequences to produce two offspring.      Supported strateg, Construct the appropriate mutator given the strategy in config.      Pass esm_pr, crossover_op(), Tests for mutation and crossover operators. (+2 more)
+Cohesion: 0.17
+Nodes (12): MutationConfig, Controls how sequences are mutated during evolution., build_mutator(), RandomMutator, Construct the appropriate mutator given the strategy in config.      Pass dyna1_, Baseline mutator: choose a random position, substitute a random AA.      Number, test_errors_propagate_instead_of_silent_random_fallback(), crossover_op() (+4 more)
 
 ### Community 10 - "bioemu_gif_maker.py"
-Cohesion: 0.17
-Nodes (23): assign_to_states(), _axis_limits(), coords_to_fingerprint(), load_ca_coords(), main(), ndarray, Path, Upper-triangle of the Cα pairwise distance matrix, flattened to 1-D.      This i (+15 more)
+Cohesion: 0.29
+Nodes (11): Connection, _connect(), create_run(), fail_run(), finalize_run(), get_run(), get_run_rounds(), init_db() (+3 more)
 
 ### Community 11 - "OptimizationConfig"
-Cohesion: 0.15
-Nodes (15): ABC, BaseStructuralBackend, build_bioemu_backend(), BioEmu Interface Module  Abstracts all structural inference behind a single cont, Minimal contract that any structural inference engine must satisfy.      Impleme, Run inference for a single sequence. Return un-aggregated output., Return the appropriate backend based on config.mock., OptimizationConfig (+7 more)
+Cohesion: 0.09
+Nodes (23): ABC, BioEmuConfig, Controls BioEmu structural inference., BaseStructuralBackend, BioEmuWrapper, ConformationSample, MockBioEmuBackend, BioEmu Interface Module  Abstracts all structural inference behind a single cont (+15 more)
 
 ### Community 12 - "ConformationalLandscapeScorer"
-Cohesion: 0.15
-Nodes (11): _clamp01(), ConformationalLandscapeScorer, _jensen_shannon_divergence(), _pairwise_drmsd(), ndarray, Compare a candidate ensemble against a target conformational landscape.      The, Return the target occupancy distribution, including the outlier bin., Pairwise distance RMSD between rows of two feature matrices. (+3 more)
-
-### Community 13 - "ScoringFunction"
-Cohesion: 0.15
-Nodes (9): Weights for the composite fitness function., ScoringConfig, Weighted combination of component scorers → single fitness scalar.      Usage::, Score a single BioEmuOutput. Returns fitness in [0, 1]., Score a list of BioEmuOutputs. Returns List[float] in same order., Return both the aggregate fitness and per-component scores.         Useful for a, ScoringFunction, scoring_fn() (+1 more)
-
-### Community 14 - "ESM2MutationProposer"
-Cohesion: 0.17
-Nodes (11): ESM2Config, Controls ESM-2 mutation proposal behaviour., ESM2MutationProposer, MutationCandidate, ESM-2 Mutation Proposal Module  Wraps Meta's ESM-2 (via HuggingFace) as a biolog, Propose top-k substitutions for each target position.          Args:, Convenience wrapper for a single position., Build one masked sequence per position, batch-tokenise, run forward pass, (+3 more)
+Cohesion: 0.05
+Nodes (44): Weights for the composite fitness function., ScoringConfig, protein_optimizer — Evolutionary protein sequence optimization framework.  Publi, OptimizationResult, Returned by ProteinOptimizationPipeline.run()., _clamp01(), CompactnessScorer, ComponentScorer (+36 more)
 
 ### Community 15 - "WildtypeProximityScorer"
-Cohesion: 0.17
-Nodes (6): Directly append WildtypeProximityScorer into the scoring function and         re, Measures how close a sequence is to a known wildtype target.      Uses normalise, Number of positions that differ between two equal-length sequences., Fraction of identical positions. Clamped to shortest length., WildtypeProximityScorer, TestWildtypeProximityScorer
-
-### Community 16 - "ConformationSample"
-Cohesion: 0.20
-Nodes (12): BioEmuWrapper, ConformationSample, ndarray, Path, Wraps the real BioEmu model (microsoft/bioemu v1.4+).      Uses bioemu.sample.ma, Load one BioEmu NPZ file and return one ConformationSample per frame.          B, Try common key names for coordinate arrays in BioEmu NPZ files., Parse Cα coordinates from a PDB file using Biopython. (+4 more)
-
-### Community 17 - "MockBioEmuBackend"
-Cohesion: 0.20
-Nodes (12): MockBioEmuBackend, Deterministic synthetic backend for unit tests and GPU-free development.      Sc, BioEmuConfig, Controls BioEmu structural inference., custom_scorer_demo(), landscape_scorer_demo(), Example usage script — demonstrates the full Python API without going through th, Custom component: penalises sequences with very high average SASA     (over-expo (+4 more)
-
-### Community 18 - "BaseMutator"
-Cohesion: 0.17
-Nodes (8): BaseMutator, ESMGuidedMutator, Softmax-weighted sampling over MutationCandidate log-probs., Abstract mutation operator.      All mutators take a sequence string and return, Return a mutated copy of *sequence*., Batch mutation. Override for vectorised implementations., Return positions eligible for mutation., Mutation operator that uses ESM-2 log-probabilities to bias substitutions     to
-
-### Community 19 - "evolutionary_search.py"
-Cohesion: 0.18
-Nodes (9): EvolutionarySearchResult, Evolutionary Search Pipeline  Implements the team's target algorithm:    1. Scor, Final result returned by BudgetedEvolutionarySearch.run()., Higher = better in both modes. Maximise mode: the LLR itself.         Target mod, CommonAncestorCrossover, Crossover operator based on consensus positions across an elite pool.      Algor, Return {position: amino_acid} for every position where all sequences agree., Generate `n_offspring` sequences by fixing consensus positions and         recom (+1 more)
+Cohesion: 0.22
+Nodes (5): Measures how close a sequence is to a known wildtype target.      Uses normalise, Number of positions that differ between two equal-length sequences., Fraction of identical positions. Clamped to shortest length., WildtypeProximityScorer, TestWildtypeProximityScorer
 
 ### Community 20 - "test_ga.py"
-Cohesion: 0.24
-Nodes (6): Unified configuration for the protein optimization framework.  All modules are d, Genetic Algorithm Module  A clean, biology-agnostic GA engine. It operates entir, Mutation and Crossover Module  Provides:   - BaseMutator: abstract contract for, crossover(), mutator(), Tests for GeneticAlgorithm and the full pipeline (mock mode).
+Cohesion: 0.13
+Nodes (9): MutationCandidate, ndarray, Collapse a per-residue p_exchange vector to one scalar., Deterministic pseudo-random per-residue p_exchange (no model needed)., Scalar dynamics score (reduced mean p_exchange) for each sequence., Propose top-k substitutions for each target position (0-based).          Returns, Convenience wrapper for a single position., Return the single best substitution at a position. (+1 more)
 
-### Community 21 - "RandomMutator"
-Cohesion: 0.25
-Nodes (4): RandomMutator, Baseline mutator: choose a random position, substitute a random AA.      Number, random_mutator(), TestRandomMutator
+### Community 25 - "CrossoverOperator"
+Cohesion: 0.17
+Nodes (5): CrossoverOperator, Recombines two parent sequences to produce two offspring.      Supported strateg, Return two offspring. If crossover rate not triggered, return clones., Pair up parents sequentially, apply crossover, flatten results.         If popul, TestCrossoverOperator
 
-### Community 22 - "ComponentScorer"
-Cohesion: 0.22
-Nodes (5): ComponentScorer, A single scoring axis. Returns a float in [0, 1].      Subclass and implement `s, Add a custom component scorer and optionally renormalize all weights         so, Add a preconfigured component scorer instance.          Use this for scorers tha, Compute a score in [0, 1] from a BioEmuOutput. Higher = better.
+### Community 26 - "test_dyna1.py"
+Cohesion: 0.29
+Nodes (11): _fake_repo(), _proposer(), Dyna-1 proposer tests (mock mode — no model or weights required)., test_all_positions_scored_in_one_call_and_cached(), test_candidates_exclude_original_and_respect_top_k(), test_deterministic(), test_missing_worker_env_gives_actionable_error(), test_ranked_best_first_and_direction_flips_order() (+3 more)
+
+### Community 30 - "Dyna1GuidedMutator"
+Cohesion: 0.40
+Nodes (3): Dyna1GuidedMutator, Random, Mutation operator that uses Dyna-1 saturation-scan scores to bias substitutions
+
+### Community 31 - "test_ga.py"
+Cohesion: 0.40
+Nodes (3): crossover(), mutator(), Tests for GeneticAlgorithm and the full pipeline (mock mode).
+
+### Community 32 - "dyna1_worker.py"
+Cohesion: 0.67
+Nodes (3): main(), Dyna-1 inference worker.  Runs inside Dyna-1's own virtualenv (its pinned numpy<, _send()
 
 ## Knowledge Gaps
 - **36 isolated node(s):** `practice.sh script`, `protein-optimizer`, `setup_vm.sh script`, `graphify`, `Table of Contents` (+31 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **8 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **13 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `BioEmuOutput` connect `Queue` to `Any`, `RunRequest`, `saved_trajectory`, `OptimizationConfig`, `ConformationalLandscapeScorer`, `ScoringFunction`, `WildtypeProximityScorer`, `ConformationSample`, `MockBioEmuBackend`, `evolutionary_search.py`, `ComponentScorer`, `._aggregate`?**
-  _High betweenness centrality (0.112) - this node is a cross-community bridge._
-- **Why does `ProteinOptimizationPipeline` connect `saved_trajectory` to `Any`, `_connect`, `RunRequest`, `MutationConfig`, `OptimizationConfig`, `ScoringFunction`, `ESM2MutationProposer`, `WildtypeProximityScorer`, `MockBioEmuBackend`, `test_ga.py`?**
-  _High betweenness centrality (0.084) - this node is a cross-community bridge._
-- **Why does `OptimizationConfig` connect `OptimizationConfig` to `server.py`, `Any`, `_connect`, `RunRequest`, `saved_trajectory`, `WildtypeProximityScorer`, `MockBioEmuBackend`, `evolutionary_search.py`, `test_ga.py`, `._from_dict`?**
+- **Why does `BioEmuOutput` connect `ConformationalLandscapeScorer` to `server.py`, `Any`, `RunRequest`, `Queue`, `saved_trajectory`, `OptimizationConfig`, `WildtypeProximityScorer`?**
+  _High betweenness centrality (0.100) - this node is a cross-community bridge._
+- **Why does `Dyna1MutationProposer` connect `Any` to `server.py`, `_connect`, `RunRequest`, `saved_trajectory`, `MutationConfig`, `ConformationalLandscapeScorer`, `test_ga.py`, `CrossoverOperator`, `test_dyna1.py`, `Dyna1GuidedMutator`?**
+  _High betweenness centrality (0.085) - this node is a cross-community bridge._
+- **Why does `ProteinOptimizationPipeline` connect `saved_trajectory` to `Any`, `_connect`, `Queue`, `OptimizationConfig`, `ConformationalLandscapeScorer`, `WildtypeProximityScorer`, `CrossoverOperator`?**
   _High betweenness centrality (0.083) - this node is a cross-community bridge._
-- **Are the 19 inferred relationships involving `BioEmuOutput` (e.g. with `BioEmuConfig` and `BudgetedEvolutionarySearch`) actually correct?**
+- **Are the 19 inferred relationships involving `BioEmuOutput` (e.g. with `BudgetedEvolutionarySearch` and `EvolutionarySearchResult`) actually correct?**
   _`BioEmuOutput` has 19 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 17 inferred relationships involving `ProteinOptimizationPipeline` (e.g. with `OptimizationTracker` and `StageReporter`) actually correct?**
+- **Are the 17 inferred relationships involving `ProteinOptimizationPipeline` (e.g. with `OptimizationConfig` and `Dyna1MutationProposer`) actually correct?**
   _`ProteinOptimizationPipeline` has 17 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 13 inferred relationships involving `MutationConfig` (e.g. with `._from_dict()` and `BaseMutator`) actually correct?**
   _`MutationConfig` has 13 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 16 inferred relationships involving `CrossoverOperator` (e.g. with `ConvergenceTracker` and `GenerationResult`) actually correct?**
-  _`CrossoverOperator` has 16 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 10 inferred relationships involving `Dyna1MutationProposer` (e.g. with `Dyna1Config` and `BudgetedEvolutionarySearch`) actually correct?**
+  _`Dyna1MutationProposer` has 10 INFERRED edges - model-reasoned connections that need verification._

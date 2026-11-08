@@ -126,10 +126,11 @@ def start_run(req: RunRequest):
             cfg = OptimizationConfig.from_yaml(str(CONFIG_DIR / "evolutionary.yaml"))
             cfg.original_sequence = req.sequence.upper().strip()
             cfg.bioemu.mock = req.mock
+            cfg.dyna1.mock = req.mock
             cfg.bioemu.num_samples = req.num_samples
             cfg.ga.population_size = req.population_size
             cfg.ga.max_generations = req.max_generations
-            cfg.mutation.strategy = "random" if req.random_mutations else "esm_guided"
+            cfg.mutation.strategy = "random" if req.random_mutations else "dyna1_guided"
 
             if req.mode == "fit_to_llr" and req.target_llr is not None:
                 cfg.target_parameter = req.target_llr

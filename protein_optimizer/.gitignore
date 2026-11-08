@@ -12,3 +12,8 @@ data/
 
 # OS / editor
 .DS_Store
+
+# Dyna-1 clone + weights (see setup_vm.sh)
+Dyna-1/
+__pycache__/
+*.pyc

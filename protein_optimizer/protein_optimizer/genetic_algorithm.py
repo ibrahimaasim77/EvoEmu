@@ -5,7 +5,7 @@ A clean, biology-agnostic GA engine. It operates entirely on:
   - sequences: List[str]       (the population)
   - scores:    List[float]     (fitness values, higher = better)
 
-It has no knowledge of BioEmu, ESM-2, or amino acids. The scoring
+It has no knowledge of BioEmu, Dyna-1, or amino acids. The scoring
 callable is injected — the GA only knows it takes a sequence and returns
 a float.
 
@@ -177,7 +177,7 @@ class GeneticAlgorithm:
     Args:
         config: GAConfig with population size, selection strategy, etc.
         fitness_fn: Callable that scores a batch of sequences.
-        mutator: BaseMutator instance (random or ESM-guided).
+        mutator: BaseMutator instance (random or Dyna-1-guided).
         crossover: CrossoverOperator instance.
         callbacks: Optional list of callables(GenerationResult) for hooks.
     """
