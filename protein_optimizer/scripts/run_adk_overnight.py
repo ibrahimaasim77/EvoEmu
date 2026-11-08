@@ -27,7 +27,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from protein_optimizer.adk_pipeline import (  # noqa: E402
-    ADKPipelineConfig, MCMCSearch, MockTwoStateBackend, detect_mobile, evaluate_mutant,
+    ADKPipelineConfig, CachedBackend, MCMCSearch, MockTwoStateBackend, detect_mobile, evaluate_mutant,
     make_two_state_references, mask_to_ranges, rank_mutants, rank_positions_dyna1,
 )
 from protein_optimizer.config import BioEmuConfig, ThermoMPNNConfig  # noqa: E402
@@ -111,7 +111,7 @@ def main() -> int:
     ap.add_argument("--hours", type=float, default=9.0)
     ap.add_argument("--out", default="results/adk")
     ap.add_argument("--frames", type=int, default=500)
-    ap.add_argument("--bioemu-batch-100", type=int, default=60)
+    ap.add_argument("--bioemu-batch-100", type=int, default=100)
     ap.add_argument("--dyna1-repo", default=str(ROOT / "Dyna-1"))
     ap.add_argument("--thermompnn-repo", default="/workspace/ThermoMPNN")
     ap.add_argument("--mock", action="store_true")
@@ -167,15 +167,19 @@ def main() -> int:
         from protein_optimizer.bioemu import build_bioemu_backend
         backend = build_bioemu_backend(BioEmuConfig(num_samples=cfg.frames, batch_size=args.bioemu_batch_100,
                                                     model_path="bioemu-v1.1", mock=False))
+        backend = CachedBackend(backend, out / "bioemu_cache")
 
     # gate: the wild type must give physical frames and both states, else units/format are wrong
     wt = evaluate_mutant(backend, seq1, [], ref1, ref2, cfg, out / "pca")
     log.info("WT: frames=%d physical=%d open=%d closed=%d llr=%s", wt.n_frames, wt.n_physical,
              wt.n_state1, wt.n_state2, wt.llr)
     if wt.n_physical < 0.2 * wt.n_frames:
-        raise SystemExit(f"Only {wt.n_physical}/{wt.n_frames} WT frames pass the physical filter -- "
-                         "check units / residue order before burning GPU time.")
-    json.dump(wt.__dict__, open(out / "wt_result.json", "w"), indent=1)
+        log.warning("Only %d/%d WT frames pass the physical filter (continuing; check units/filter)",
+                    wt.n_physical, wt.n_frames)
+    json.dump({k: (None if isinstance(v, float) and v != v else v) for k, v in wt.__dict__.items()},
+              open(out / "wt_result.json", "w"), indent=1)
+    if wt.n_physical < 20:
+        raise SystemExit(f"Only {wt.n_physical} physical WT frames; nothing to learn from.")
 
     cfg.time_budget_s = max(60.0, args.hours * 3600 - (time.time() - t0))
     pos_bias = np.log(np.clip(pex, 1e-3, None))

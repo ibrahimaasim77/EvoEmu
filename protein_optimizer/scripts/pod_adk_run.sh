@@ -55,4 +55,8 @@ RC=${PIPESTATUS[0]}
 kill $HB 2>/dev/null
 if [ "$RC" -ne 0 ]; then echo "run_adk_overnight.py exited $RC" > /workspace/ADK_SETUP_FAILED; echo "ADK FAILED (rc=$RC)"; fi
 [ -f "$OUT/ADK_DONE" ] && echo "=== ADK_DONE ==="
+if [ "$RC" -ne 0 ]; then
+  # keep the pod alive (and the traceback readable in the pod logs) for 40 min before stopping
+  for i in $(seq 1 40); do echo "FAILED-HOLD $i/40: $(tail -n 5 "$OUT/run.log" 2>/dev/null | tr '\n' '|' | cut -c1-400)"; sleep 60; done
+fi
 selfstop

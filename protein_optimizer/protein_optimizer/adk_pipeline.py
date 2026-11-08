@@ -267,6 +267,50 @@ def save_pca_png(frames: np.ndarray, states: np.ndarray, ref1: np.ndarray, ref2:
     plt.close(fig)
 
 
+class CachedBackend:
+    """Wraps a structure backend: raw CA frames are cached on disk per (sequence, n_samples), so a crash or a
+    code fix never repeats a 15-45 minute BioEmu call; CUDA OOM halves batch_size and retries."""
+
+    def __init__(self, inner, cache_dir):
+        self.inner, self.dir = inner, Path(cache_dir)
+        self.dir.mkdir(parents=True, exist_ok=True)
+
+    @property
+    def config(self):
+        return self.inner.config
+
+    def infer_batch(self, sequences):
+        from protein_optimizer.bioemu import BioEmuOutput, ConformationSample
+        import hashlib
+        outs = []
+        for seq in sequences:
+            n = self.inner.config.num_samples
+            f = self.dir / f"{hashlib.sha1(seq.encode()).hexdigest()[:16]}_{n}.npz"
+            if f.exists():
+                arr = np.load(f)["ca"]
+                logging.getLogger(__name__).info("BioEmu cache hit %s (%d frames)", f.name, len(arr))
+            else:
+                while True:
+                    try:
+                        out = self.inner.infer_batch([seq])[0]
+                        break
+                    except Exception as exc:
+                        bs = getattr(self.inner.config, "batch_size", 1)
+                        if "out of memory" in str(exc).lower() and bs > 4:
+                            self.inner.config.batch_size = max(4, bs // 2)
+                            logging.getLogger(__name__).warning("CUDA OOM; batch_size_100 %d -> %d", bs, self.inner.config.batch_size)
+                            try:
+                                import torch; torch.cuda.empty_cache()
+                            except Exception:
+                                pass
+                            continue
+                        raise
+                arr = np.stack([x.ca_coords for x in out.samples if x.ca_coords is not None])
+                np.savez_compressed(f, ca=arr)
+            outs.append(BioEmuOutput(sequence=seq, samples=[ConformationSample(ca_coords=a) for a in arr]))
+        return outs
+
+
 def evaluate_mutant(
     backend: BaseStructuralBackend,
     sequence: str,
@@ -300,8 +344,11 @@ def evaluate_mutant(
         res.dg = RT_KCAL * res.llr
     if png_dir is not None and len(frames) > 2:
         p = Path(png_dir) / f"{'_'.join(mutations) or 'wt'}.png"
-        save_pca_png(frames, states, ref1, ref2, core, p, f"{'+'.join(mutations) or 'WT'}  n1={n1} n2={n2}")
-        res.pca_png = str(p)
+        try:
+            save_pca_png(frames, states, ref1, ref2, core, p, f"{'+'.join(mutations) or 'WT'}  n1={n1} n2={n2}")
+            res.pca_png = str(p)
+        except Exception as exc:  # a plotting problem must not lose an expensive BioEmu result
+            logging.getLogger(__name__).warning("PCA png failed for %s: %s", p.name, exc)
     return res
 
 
