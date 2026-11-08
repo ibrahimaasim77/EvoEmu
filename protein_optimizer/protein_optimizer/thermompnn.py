@@ -145,8 +145,16 @@ def parse_thermompnn_csv(path: str | Path, name: str, sequence: str) -> DdgTable
     table = DdgTable(name=name, wildtype=sequence)
     seen_wt: Dict[int, str] = {}
     with open(path, newline="") as fh:
-        for row in csv.DictReader(fh):
-            pos = int(row["position"])
+        rows = list(csv.DictReader(fh))
+    # ThermoMPNN's position column may be 0- or 1-based depending on version: pick the offset that
+    # makes the CSV's wild-type residues agree with the sequence.
+    def _agree(off: int) -> int:
+        return sum(1 for r in rows if 0 <= int(r["position"]) - off < len(sequence)
+                   and sequence[int(r["position"]) - off] == r["wildtype"])
+    offset = max((0, 1), key=_agree)
+    if True:
+        for row in rows:
+            pos = int(row["position"]) - offset
             wt, mut = row["wildtype"], row["mutation"]
             if pos >= len(sequence) or sequence[pos] != wt:
                 raise ValueError(

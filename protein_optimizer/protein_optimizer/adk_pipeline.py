@@ -67,6 +67,7 @@ class ADKPipelineConfig:
     mcmc_temperature: float = 0.5           # in fitness units (|LLR| distance)
     esm_weight: float = 1.0
     ddg_weight: float = 0.5                 # penalty per kcal/mol of worst ddG above 0
+    max_mutations: int = 5                  # cap on simultaneous mutations vs WT (ddG is single-mutant only)
     stall_steps: int = 15                   # steps with no accepted move before pool widens
     pool_growth: int = 5
     time_budget_s: float = 8 * 3600
@@ -183,6 +184,34 @@ def classify_states(frames: np.ndarray, ref1: np.ndarray, ref2: np.ndarray, core
     return np.where(r1 <= r2, 1, 2)
 
 
+def detect_mobile(ref1: np.ndarray, ref2: np.ndarray, core_cut: float = 3.0, iters: int = 8) -> np.ndarray:
+    """Boolean mask of residues that MOVE between two same-length CA traces.
+    Iteratively superposes on the residues that stay put (displacement < core_cut A)."""
+    core = np.ones(len(ref1), dtype=bool)
+    for _ in range(iters):
+        R, cm, cr = _kabsch(ref1[core], ref2[core])
+        moved = (ref1 - cm) @ R + cr
+        d = np.linalg.norm(moved - ref2, axis=1)
+        new = d < core_cut
+        if new.sum() < 10 or (new == core).all():
+            break
+        core = new
+    return ~core
+
+
+def mask_to_ranges(mobile: np.ndarray) -> List[Tuple[int, int]]:
+    """Boolean mobile mask -> 1-based inclusive (start, end) runs."""
+    out, start = [], None
+    for i, m in enumerate(mobile):
+        if m and start is None:
+            start = i + 1
+        if not m and start is not None:
+            out.append((start, i)); start = None
+    if start is not None:
+        out.append((start, len(mobile)))
+    return out
+
+
 @dataclass
 class MutantResult:
     sequence: str
@@ -205,7 +234,12 @@ def _coords(output: BioEmuOutput) -> np.ndarray:
     arr = [s.ca_coords for s in output.samples if s.ca_coords is not None]
     if not arr:
         raise ValueError("BioEmu output has no CA coordinates; cannot filter/classify frames.")
-    return np.stack(arr)
+    frames = np.stack(arr).astype(float)
+    # BioEmu NPZ positions are in nm while the rest of the code assumes Angstrom. Consecutive CA-CA
+    # is ~3.8 A (0.38 nm), so a median below 1.5 can only be nm.
+    if np.median(np.linalg.norm(np.diff(frames[0], axis=0), axis=1)) < 1.5:
+        frames = frames * 10.0
+    return frames
 
 
 def save_pca_png(frames: np.ndarray, states: np.ndarray, ref1: np.ndarray, ref2: np.ndarray,
@@ -298,6 +332,8 @@ class MCMCSearch:
         ref2: np.ndarray,
         position_order: Sequence[int],
         esm_logp: Optional[Callable[[str], np.ndarray]] = None,
+        pos_bias: Optional[np.ndarray] = None,
+        bias_weight: float = 0.0,
     ) -> None:
         self.cfg, self.backend, self.reference = cfg, backend, reference
         self.t1, self.t2, self.ref1, self.ref2 = table_1, table_2, ref1, ref2
@@ -309,6 +345,23 @@ class MCMCSearch:
         self.discarded: Set[str] = set()
         self.out = Path(cfg.out_dir)
         self.history: List[dict] = []
+        self.pos_bias = pos_bias                # per-position log-weight (e.g. log mean Dyna-1 pex)
+        self.bias_weight = bias_weight          # pushes proposals toward the target state's ddG gap
+        self._resume()
+
+    def _resume(self) -> None:
+        ck = self.out / "checkpoint.json"
+        if not ck.exists():
+            return
+        try:
+            d = json.loads(ck.read_text())
+            self.results = {k: MutantResult(**v) for k, v in d["results"].items()}
+            self.discarded = set(d["discarded"])
+            self.pool_size = d["pool_size"]
+            self.history = d["history"]
+            logger.info("Resumed %d evaluated sequences from checkpoint", len(self.results))
+        except Exception as exc:
+            logger.warning("Could not resume from %s: %s", ck, exc)
 
     # -- fitness: higher is better ------------------------------------------------
     def fitness(self, llr: float) -> float:
@@ -334,15 +387,22 @@ class MCMCSearch:
         cands, weights = [], []
         for pos in pool:
             for j, aa in enumerate(AMINO_ACIDS):
-                if aa == seq[pos] or (self.cfg.exclude_cysteine and aa == "C"):
+                if aa == seq[pos] or (self.cfg.exclude_cysteine and aa == "C" and aa != self.reference[pos]):
                     continue
-                if self._worst(pos, aa) > self.cfg.ddg_cutoff:        # hard stability guard
+                if aa != self.reference[pos] and self._worst(pos, aa) > self.cfg.ddg_cutoff:        # hard stability guard
                     continue
                 new = seq[:pos] + aa + seq[pos + 1:]
                 if new in self.discarded:
                     continue
+                if len(mutation_labels(self.reference, new)) > self.cfg.max_mutations:
+                    continue
                 score = self.cfg.esm_weight * (float(logp[pos, j]) if logp is not None else 0.0)
                 score -= self.cfg.ddg_weight * max(self._worst(pos, aa), 0.0)
+                if self.pos_bias is not None:
+                    score += float(self.pos_bias[pos])
+                if self.bias_weight:
+                    gap = (self.t1.get(pos, aa) or 0.0) - (self.t2.get(pos, aa) or 0.0)
+                    score += self.bias_weight * (gap if self.cfg.bias_toward == 2 else -gap)
                 cands.append(new)
                 weights.append(score)
         if not cands:

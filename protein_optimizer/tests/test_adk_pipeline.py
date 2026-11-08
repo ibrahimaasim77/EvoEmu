@@ -73,3 +73,25 @@ def test_mcmc_end_to_end_writes_checkpoint_and_pngs(tmp_path):
     assert best.valid and (tmp_path / "checkpoint.json").exists()
     assert list((tmp_path / "pca").glob("*.png"))
     assert all(r.sequence not in search.discarded for r in search.results.values() if r.valid)
+
+
+def test_mutation_cap_and_mobile_detection(tmp_path):
+    from protein_optimizer.adk_pipeline import detect_mobile, mask_to_ranges, mutation_labels
+    ref1, ref2 = make_two_state_references(L, (41, 60))
+    ref2 = ref1.copy()
+    ref2[40:] += np.array([15.0, 0.0, 0.0])                            # rigidly displaced tail
+    mob = detect_mobile(ref1, ref2)
+    assert mob[40:].all() and not mob[:40].any()
+    assert mask_to_ranges(mob) == [(41, L)]
+    cfg, r1, r2, backend, t1, t2 = _setup(tmp_path, max_mutations=2, time_budget_s=2)
+    search = MCMCSearch(cfg, backend, SEQ, t1, t2, r1, r2, list(range(L)))
+    search.run([SEQ[:5] + "W" + SEQ[6:]])
+    assert all(len(mutation_labels(SEQ, s)) <= 2 for s in search.results)
+
+
+def test_nm_coordinates_are_rescaled():
+    from protein_optimizer.adk_pipeline import _coords
+    from protein_optimizer.bioemu import BioEmuOutput, ConformationSample
+    ref1, _ = make_two_state_references(L, (41, 60))
+    out = BioEmuOutput(sequence=SEQ, samples=[ConformationSample(ca_coords=ref1 / 10.0)])
+    assert abs(np.linalg.norm(np.diff(_coords(out)[0], axis=0), axis=1).mean() - 3.8) < 0.01
